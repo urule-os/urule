@@ -215,11 +215,16 @@ Each package has a manifest validated against the `@urule/spec` JSON Schema.
 | E2E integration | 28 |
 | **Total** | **278** |
 
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for the full improvement plan — ~140 items across security, testing, UX, infrastructure, developer experience, and features. Each item is scoped to a specific repo with actionable sub-tasks. Pick any unchecked item and contribute!
+
 ## Contributing
 
 We'd love your help making AI more usable. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 Ways to contribute:
+- Pick an item from the [Roadmap](ROADMAP.md) — security fixes, tests, UX improvements, and more
 - Build a new [widget](https://github.com/urule-os/widget-sdk)
 - Implement an [orchestrator adapter](https://github.com/urule-os/orchestrator-contract) for your favorite AI framework
 - Add a [channel adapter](https://github.com/urule-os/channel-router) for a new messaging platform

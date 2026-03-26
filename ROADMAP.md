@@ -1,0 +1,312 @@
+# Urule Roadmap
+
+This document tracks improvements, fixes, and features across the entire Urule ecosystem. Items are organized by priority and category. Each item includes sub-tasks scoped to specific repos/packages.
+
+**Want to contribute?** Pick any unchecked item, open an issue referencing it, and submit a PR. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+---
+
+## 1. Security (Critical)
+
+These items must be addressed before any production deployment.
+
+### 1.1 Authentication Middleware
+Add JWT validation middleware to all service routes.
+
+- [ ] **registry** — Add `@fastify/jwt` plugin, validate Bearer tokens on all `/api/v1/*` routes
+- [ ] **langgraph-adapter** — Add JWT middleware to chat, runs, and WebSocket endpoints
+- [ ] **approvals** — Add JWT middleware; extract user identity for approval audit trail
+- [ ] **mcp-gateway** — Add JWT middleware to server registration and binding routes
+- [ ] **channel-router** — Add JWT middleware (except webhook ingestion endpoints which use HMAC)
+- [ ] **packagehub** — Add JWT middleware to publish/version routes (read routes can be public)
+- [ ] **state** — Add JWT middleware to presence and task ownership routes
+- [ ] **governance** — Add JWT middleware; this service validates auth for others
+- [ ] **runtime-broker** — Add JWT middleware to session allocation routes
+- [ ] **backstage plugin** — Add service-to-service auth token validation
+- [ ] **Shared**: Create `@urule/auth-middleware` package with reusable Fastify plugin
+
+### 1.2 Input Validation
+Add request body/query validation on all API routes.
+
+- [ ] **registry** — Validate agent creation (`config` field accepts arbitrary objects), workspace updates, provider creation with Zod schemas
+- [ ] **approvals** — Validate approval request body (currently cast without checking)
+- [ ] **mcp-gateway** — Validate MCP server registration payload
+- [ ] **channel-router** — Validate channel binding and identity mapping payloads
+- [ ] **state** — Validate room creation (capacity, type) and widget state updates
+- [ ] **packagehub** — Validate package publish payload and search query parameters (limit, offset)
+- [ ] **langgraph-adapter** — Validate run start params and chat message body
+- [ ] **runtime-broker** — Validate session allocation request
+- [ ] **Shared**: Consider `@fastify/type-provider-zod` for schema-first validation across all services
+
+### 1.3 CORS Lockdown
+Replace `origin: true` (allow all) with explicit origin whitelist.
+
+- [ ] **registry** — Restrict CORS to Office UI origin (`localhost:3000` in dev, configurable via env)
+- [ ] **packagehub** — Restrict CORS (read endpoints may stay open for public package browsing)
+- [ ] **state** — Restrict CORS to Office UI origin
+- [ ] **langgraph-adapter** — Restrict CORS to Office UI origin
+
+### 1.4 Rate Limiting
+Add `@fastify/rate-limit` to prevent abuse.
+
+- [ ] **All services** — Add rate limiting plugin with sensible defaults (100 req/min per IP)
+- [ ] **langgraph-adapter** — Stricter limits on `/api/v1/chat` (AI execution is expensive)
+- [ ] **packagehub** — Rate limit package publish endpoint
+
+### 1.5 Environment & Config Validation
+Validate required environment variables at startup; fail fast if missing.
+
+- [ ] **All services** — Add startup config validation (check DATABASE_URL, NATS_URL, etc.)
+- [ ] **governance** — Fail if `OPENFGA_STORE_ID` is empty (currently defaults to `""`)
+- [ ] **All services** — Remove hardcoded default database credentials from config files
+- [ ] **langgraph-adapter** — Never expose API keys or secrets in error messages
+
+### 1.6 Audit Logging
+Track who did what and when for compliance.
+
+- [ ] **registry** — Log agent creation, modification, deletion with user identity
+- [ ] **approvals** — Log approval decisions with approver identity and reasoning
+- [ ] **governance** — Log policy evaluation results
+- [ ] **mcp-gateway** — Log MCP server registration and binding changes
+- [ ] **Shared**: Define audit event schema in `@urule/events`
+
+---
+
+## 2. Testing (High)
+
+### 2.1 Unit Test Coverage
+Fill gaps in services that lack route-level tests.
+
+- [ ] **registry** — Add route tests for orgs, workspaces, agents, runtimes, providers, conversations
+- [ ] **packagehub** — Add route tests for package search, publish, version management
+- [ ] **langgraph-adapter** — Add route tests for chat, runs, WebSocket streaming
+- [ ] **backstage plugin** — Add route tests for catalog sync and scaffolder actions
+- [ ] **channel-router** — Add route tests (currently only has adapter tests)
+- [ ] **packages** — Add route tests for install/upgrade/remove lifecycle
+- [ ] **All services** — Add error handling tests (invalid input, 404s, 500s)
+
+### 2.2 E2E Integration Tests
+Extend the Phase 1 E2E suite to cover all phases.
+
+- [ ] **Phase 2 E2E** — Test package install lifecycle: publish to PackageHub → install via packages service → verify in registry
+- [ ] **Phase 3 E2E** — Test approval workflow: create approval → approve/deny → verify event published
+- [ ] **Phase 4 E2E** — Test channel routing: send webhook → verify normalized message → check state updates
+- [ ] **Phase 5 E2E** — Test widget lifecycle: register widget → mount in UI → verify bridge communication
+- [ ] **Phase 6 E2E** — Test full UX flow: configure API key → install personality → chat with AI → agent hiring
+
+### 2.3 UI Testing
+Add browser-based testing for the Office UI.
+
+- [ ] **office-ui** — Set up Playwright for E2E browser tests
+- [ ] **office-ui** — Test auth flow (login, register, demo mode)
+- [ ] **office-ui** — Test agent creation wizard (select personality, configure, deploy)
+- [ ] **office-ui** — Test chat interface (send message, receive streaming response)
+- [ ] **office-ui** — Test approval queue (view, approve, deny)
+- [ ] **office-ui** — Test responsive layout (mobile, tablet, desktop)
+
+### 2.4 Security Testing
+- [ ] **All services** — Add tests verifying unauthenticated requests return 401
+- [ ] **All services** — Add tests verifying invalid input returns 400 (not 500)
+- [ ] **All services** — Add CORS validation tests
+- [ ] **Infra** — Add `npm audit` step to CI pipeline
+
+---
+
+## 3. UX & UI (High)
+
+### 3.1 Error Handling
+Replace silent failures and `alert()` calls with proper UI feedback.
+
+- [ ] **office-ui** — Create a toast/notification system (replace all `alert()` calls)
+- [ ] **office-ui** — Add React Error Boundaries for graceful crash recovery
+- [ ] **office-ui** — Show error states when API calls fail (currently many `.catch(() => {})`)
+- [ ] **office-ui** — Add network offline detection banner
+- [ ] **office-ui** — Add retry buttons on failed data fetches
+- [ ] **office-ui** — Handle 401/403 redirects consistently
+
+### 3.2 Accessibility (WCAG 2.1)
+- [ ] **office-ui** — Add `<main>`, `<nav>`, `<header>` semantic landmarks to layout
+- [ ] **office-ui** — Add ARIA labels to all interactive elements (buttons, links, form fields)
+- [ ] **office-ui** — Add keyboard navigation for sidebar, modals, and dropdowns
+- [ ] **office-ui** — Add `aria-live` regions for dynamic content (chat messages, notifications)
+- [ ] **office-ui** — Add explicit `<label>` associations for all form inputs
+- [ ] **office-ui** — Test with screen reader (VoiceOver/NVDA) and fix issues
+- [ ] **office-ui** — Ensure minimum 44px touch targets on mobile
+
+### 3.3 Missing Pages & Flows
+- [ ] **office-ui** — Implement `/forgot-password` page (currently a dead link from login)
+- [ ] **office-ui** — Implement SSO/OAuth login (Google, GitHub — currently shows "Coming soon" alert)
+- [ ] **office-ui** — Fix dead link to `/office/boards` from agent live page
+- [ ] **office-ui** — Add email verification flow after registration
+- [ ] **office-ui** — Add logout confirmation dialog
+
+### 3.4 Loading States
+- [ ] **office-ui** — Add skeleton loaders for chat conversation list
+- [ ] **office-ui** — Add skeleton loaders for agent catalog
+- [ ] **office-ui** — Ensure consistent loading patterns across all pages (some use spinners, some use skeletons)
+
+### 3.5 Notification System
+- [ ] **office-ui** — Create toast notification component (success, error, warning, info)
+- [ ] **office-ui** — Add notification center (bell icon in header with notification history)
+- [ ] **office-ui** — Wire approval events to real-time notifications via WebSocket
+
+### 3.6 Theme & Visual
+- [ ] **office-ui** — Add light mode support (currently dark-only)
+- [ ] **office-ui** — Create theme toggle in settings
+- [ ] **office-ui** — Add `useThemeStore` to persist user preference
+- [ ] **office-ui** — Respect `prefers-color-scheme` system preference
+
+### 3.7 Mobile UX
+- [ ] **office-ui** — Add collapsible sidebar for mobile (hamburger menu)
+- [ ] **office-ui** — Optimize agent creation wizard for narrow screens
+- [ ] **office-ui** — Add bottom navigation bar for mobile
+- [ ] **office-ui** — Test and fix chat interface on small screens
+
+---
+
+## 4. Infrastructure (Medium)
+
+### 4.1 Database Migrations
+Replace fragile init scripts with proper versioned migrations.
+
+- [ ] **registry** — Generate Drizzle migration files from schema (currently empty `migrations/` dir)
+- [ ] **packagehub** — Generate Drizzle migration files
+- [ ] **mcp-gateway** — Generate Drizzle migration files
+- [ ] **infra** — Document migration strategy (how to apply, rollback, test)
+- [ ] **infra** — Add migration step to Docker Compose startup
+
+### 4.2 Docker Improvements
+- [ ] **All Dockerfiles** (12 services) — Add `HEALTHCHECK` instruction
+- [ ] **All services in compose** — Add `restart: unless-stopped` policy
+- [ ] **All services in compose** — Add memory/CPU resource limits
+- [ ] **All services in compose** — Configure log rotation (`max-size`, `max-file`)
+- [ ] **infra compose** — Add health checks for Temporal, Keycloak, OpenFGA, OPA
+
+### 4.3 Structured Logging
+- [ ] **All services** — Integrate Pino for structured JSON logging
+- [ ] **All services** — Add request correlation IDs across service boundaries
+- [ ] **All services** — Add log levels management (configurable via env var)
+- [ ] **All error handlers** — Log errors with full context (stack trace, request details)
+
+### 4.4 OpenTelemetry & Tracing
+- [ ] **registry** — Add `@opentelemetry/sdk-node` instrumentation (telemetry dir exists but is empty)
+- [ ] **All services** — Add OTEL trace/span generation for HTTP requests
+- [ ] **All services** — Add OTEL trace propagation for cross-service calls
+- [ ] **infra** — Verify OTEL Collector → Jaeger pipeline receives data
+
+### 4.5 Database Performance
+- [ ] **packagehub** — Add indexes on `packages.name` (used in search with `ilike()`)
+- [ ] **registry** — Add indexes on `agents.workspaceId`, `workspaces.orgId`
+- [ ] **mcp-gateway** — Add indexes on `bindings.workspaceId`, `servers.name`
+- [ ] **All services** — Add pagination to list endpoints (currently return unbounded result sets)
+
+### 4.6 Graceful Shutdown
+- [ ] **All services** — Add `SIGTERM`/`SIGINT` handlers to close DB connections and drain NATS
+- [ ] **langgraph-adapter** — Close WebSocket connections on shutdown
+- [ ] **state** — Flush NATS KV state before shutdown
+
+---
+
+## 5. Developer Experience (Medium)
+
+### 5.1 Monorepo Tooling
+- [ ] **urule (main repo)** — Add root `package.json` with npm workspaces config
+- [ ] **urule** — Add `npm run test:all` command that runs tests across all packages
+- [ ] **urule** — Add `npm run build:all` command
+- [ ] **urule** — Add `npm run lint:all` command
+- [ ] **urule** — Consider Turborepo for incremental builds and caching
+
+### 5.2 Shared Configurations
+- [ ] **urule** — Create shared `tsconfig.base.json` (currently 18 near-identical copies)
+- [ ] **urule** — Create shared ESLint config package
+- [ ] **urule** — Create shared Prettier config
+- [ ] **urule** — Pin Node.js version with `.nvmrc` or `.node-version`
+
+### 5.3 Dependency Alignment
+- [ ] **All packages** — Align TypeScript version (currently ranges from `^5.3.3` to `^5.8.3`)
+- [ ] **All packages** — Align Vitest version (currently ranges from `^2.0.0` to `^3.1.4`)
+- [ ] **All packages** — Align Fastify version across all services
+
+### 5.4 CI/CD Pipeline
+- [ ] **urule** — Add GitHub Actions workflow: build + test on PR
+- [ ] **urule** — Add linting and type-checking to CI
+- [ ] **urule** — Add `npm audit` security scanning to CI
+- [ ] **urule** — Add Docker image build + push to GHCR on tag
+- [ ] **All standalone repos** — Verify CI workflows work (already have `ci.yml`)
+
+### 5.5 API Documentation
+- [ ] **All services** — Add `@fastify/swagger` for auto-generated OpenAPI specs
+- [ ] **All services** — Add route-level JSDoc comments with parameter descriptions
+- [ ] **urule** — Generate unified API docs site (Swagger UI or Redoc)
+- [ ] **Libraries** — Add TypeDoc for auto-generated type documentation
+
+### 5.6 Developer Setup
+- [ ] **urule** — Create `scripts/dev-setup.sh` that installs all deps across all packages
+- [ ] **urule** — Improve `scripts/clone-all.sh` to also run `npm install` in each repo
+- [ ] **urule** — Add a `Makefile` with common commands (`make dev`, `make test`, `make build`)
+
+---
+
+## 6. Features (Low)
+
+### 6.1 Widget System
+- [ ] **widget-sdk** — Add widget configuration persistence (save widget settings)
+- [ ] **widget-sdk** — Add widget-to-widget communication protocol
+- [ ] **office-ui** — Make widgets truly modular (currently most are page re-exports)
+- [ ] **office-ui** — Add widget drag-and-drop customization in dashboard
+- [ ] **office-ui** — Add widget marketplace UI (browse, install, configure)
+
+### 6.2 Agent Capabilities
+- [ ] **registry** — Implement agent memory storage (currently returns empty arrays)
+- [ ] **registry** — Implement real agent metrics (currently returns hardcoded zeros)
+- [ ] **registry** — Implement real agent health checks (currently hardcoded)
+- [ ] **langgraph-adapter** — Add support for multiple AI providers (OpenAI, Gemini, local models)
+- [ ] **langgraph-adapter** — Add conversation branching/forking
+- [ ] **orchestrator-contract** — Add adapter implementations for CrewAI, AutoGen, ADK
+
+### 6.3 Package Ecosystem
+- [ ] **packagehub** — Add package ratings and reviews
+- [ ] **packagehub** — Add package dependency resolution (display dependency tree)
+- [ ] **packages** — Add package auto-update notifications
+- [ ] **packages** — Add rollback capability for package upgrades
+
+### 6.4 Collaboration
+- [ ] **state** — Implement real-time collaborative editing (CRDT or OT)
+- [ ] **state** — Add typing indicators for chat
+- [ ] **channel-router** — Add email channel adapter
+- [ ] **channel-router** — Add Discord channel adapter
+- [ ] **channel-router** — Add Microsoft Teams channel adapter
+
+### 6.5 Office UI Features
+- [ ] **office-ui** — Add data export/download for lists (CSV, JSON)
+- [ ] **office-ui** — Add form draft auto-save
+- [ ] **office-ui** — Add undo/redo for form editing
+- [ ] **office-ui** — Add keyboard shortcuts (Cmd+K command palette)
+- [ ] **office-ui** — Add user preferences store (layout, filters, favorites)
+- [ ] **office-ui** — Add real-time notification sounds (configurable)
+
+### 6.6 Operations
+- [ ] **infra** — Add Prometheus metrics collection
+- [ ] **infra** — Add Grafana dashboards for service monitoring
+- [ ] **infra** — Create deployment guide (production setup)
+- [ ] **infra** — Create backup/recovery documentation
+- [ ] **infra** — Add Helm charts for Kubernetes deployment
+
+---
+
+## Summary
+
+| Category | Priority | Items | Affects |
+|----------|----------|-------|---------|
+| Security | Critical | 25+ | All services |
+| Testing | High | 20+ | All repos |
+| UX & UI | High | 25+ | office-ui |
+| Infrastructure | Medium | 20+ | All services, infra |
+| Developer Experience | Medium | 20+ | All repos |
+| Features | Low | 25+ | Various |
+
+**Total: ~140 improvement items**
+
+---
+
+*Last updated: 2026-03-26*
