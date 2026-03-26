@@ -7,6 +7,7 @@ import Link from "next/link";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { toast } from "@/store/useToastStore";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import type { Agent } from "@/types";
 
 interface ConversationListItem {
@@ -165,9 +166,7 @@ export default function ChatListPage() {
 
       {/* Conversation List */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <span className="icon text-primary animate-spin text-2xl">progress_activity</span>
-        </div>
+        <SkeletonList count={8} />
       ) : filtered.length === 0 ? (
         <div className="text-center py-20">
           <span className="icon text-text-muted text-4xl mb-3 block">chat_bubble_outline</span>

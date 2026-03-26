@@ -520,13 +520,13 @@ export default function ChatPage({ params }: { params: { conversationId: string 
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Header */}
-      <div className="p-4 border-b border-primary/10 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="icon text-primary">forum</span>
-          <div>
-            <h2 className="font-bold">{conversation?.title ?? "Chat"}</h2>
+      <div className="p-3 sm:p-4 border-b border-primary/10 flex items-center justify-between gap-2 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <span className="icon text-primary shrink-0">forum</span>
+          <div className="min-w-0">
+            <h2 className="font-bold truncate">{conversation?.title ?? "Chat"}</h2>
             <p className="text-[10px] text-text-muted uppercase tracking-widest">
               {conversation?.type}
             </p>
@@ -534,7 +534,7 @@ export default function ChatPage({ params }: { params: { conversationId: string 
         </div>
         {/* Participant badges */}
         {participantAgents.length > 0 && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <div className="flex -space-x-2">
               {participantAgents.map((a) => (
                 <div
@@ -550,14 +550,14 @@ export default function ChatPage({ params }: { params: { conversationId: string 
                 </div>
               ))}
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="hidden sm:flex items-center gap-1.5">
               <span className="size-1.5 rounded-full bg-accent-success animate-pulse" />
               <span className="text-[10px] text-accent-success font-semibold uppercase tracking-wider">
                 Online
               </span>
             </div>
             {participantAgents.length > 1 && (
-              <span className="text-[10px] text-text-muted flex items-center gap-1">
+              <span className="hidden sm:flex text-[10px] text-text-muted items-center gap-1">
                 <span className="icon text-xs text-accent-success">sync</span>
                 collaborating
               </span>
@@ -567,7 +567,7 @@ export default function ChatPage({ params }: { params: { conversationId: string 
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-5" role="log" aria-label="Chat messages" aria-live="polite">
+      <div className="flex-1 overflow-y-auto min-h-0 p-3 sm:p-6 space-y-5" role="log" aria-label="Chat messages" aria-live="polite">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <span className="icon text-5xl text-text-muted">forum</span>
@@ -665,9 +665,9 @@ export default function ChatPage({ params }: { params: { conversationId: string 
       )}
 
       {/* Input */}
-      <div className="p-4 border-t border-primary/10">
+      <div className="p-3 sm:p-4 border-t border-primary/10 shrink-0">
         {/* Quick action pills */}
-        <div className="flex items-center gap-2 mb-3" role="group" aria-label="Quick actions">
+        <div className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none" role="group" aria-label="Quick actions">
           {[
             { label: "Summarize", icon: "summarize", text: "Summarize the conversation so far." },
             { label: "Assign Tasks", icon: "task_alt", text: "Assign tasks to the appropriate agents." },
@@ -679,7 +679,7 @@ export default function ChatPage({ params }: { params: { conversationId: string 
                 setInput(action.text);
                 inputRef.current?.focus();
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border-dark bg-surface-dark hover:bg-primary/10 hover:border-primary/30 text-xs text-text-muted hover:text-primary transition-all active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border-dark bg-surface-dark hover:bg-primary/10 hover:border-primary/30 text-xs text-text-muted hover:text-primary transition-all active:scale-95 whitespace-nowrap shrink-0"
             >
               <span className="icon text-xs">{action.icon}</span>
               {action.label}
@@ -687,7 +687,7 @@ export default function ChatPage({ params }: { params: { conversationId: string 
           ))}
         </div>
 
-        <div className="flex items-end gap-3">
+        <div className="flex items-end gap-2 sm:gap-3">
           <div className="flex-1 relative">
             <textarea
               ref={inputRef}

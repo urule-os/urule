@@ -9,10 +9,23 @@
   :root {
     --primary: #0db9f2;
     --background-dark: #101e22;
+    --background-light: #f5f8f8;
     --surface-dark: #182d34;
     --border-dark: #315a68;
     --accent-dark: #223f49;
     --text-muted: #90bccb;
+    --accent-success: #0bda57;
+    --accent-warning: #fa5f38;
+  }
+
+  .light {
+    --primary: #0da8e0;
+    --background-dark: #f8f9fa;
+    --background-light: #ffffff;
+    --surface-dark: #ffffff;
+    --border-dark: #e2e8f0;
+    --accent-dark: #edf2f7;
+    --text-muted: #64748b;
     --accent-success: #0bda57;
     --accent-warning: #fa5f38;
   }
@@ -22,7 +35,12 @@
   }
 
   body {
-    @apply bg-background-dark text-white font-sans antialiased;
+    @apply bg-background-dark font-sans antialiased;
+    color: #ffffff;
+  }
+
+  .light body {
+    color: #1a1a2e;
   }
 
   /* Scrollbar styling */
@@ -93,5 +111,18 @@
   /* Glow effect on primary elements */
   .glow-primary {
     box-shadow: 0 0 20px rgba(13, 185, 242, 0.15);
+  }
+
+  /* Light mode overrides for shadows */
+  .light .neo-shadow {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.06);
+  }
+
+  .light .glow-primary {
+    box-shadow: 0 0 12px rgba(13, 168, 224, 0.1);
+  }
+
+  .light .grid-bg {
+    background-image: radial-gradient(circle, rgba(13, 168, 224, 0.06) 1px, transparent 1px);
   }
 }

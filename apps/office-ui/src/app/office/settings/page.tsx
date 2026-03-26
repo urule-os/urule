@@ -6,6 +6,7 @@ import axios from "axios";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { Workspace, ModelProvider } from "@/types";
+import { useThemeStore } from "@/store/useThemeStore";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -494,6 +495,59 @@ function AddProviderForm({
   );
 }
 
+// ── Appearance section ───────────────────────────────────────────────────────
+
+const THEME_OPTIONS = [
+  { value: "dark" as const, label: "Dark", icon: "dark_mode", description: "Dark background, easy on the eyes" },
+  { value: "light" as const, label: "Light", icon: "light_mode", description: "Light background, high contrast" },
+  { value: "system" as const, label: "System", icon: "desktop_windows", description: "Follow your OS preference" },
+];
+
+function AppearanceSection() {
+  const { theme, setTheme } = useThemeStore();
+
+  return (
+    <section className="glass-panel rounded-xl p-8 space-y-6">
+      <SectionHeader
+        icon="palette"
+        title="Appearance"
+        description="Customize the look and feel of your workspace."
+      />
+
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">
+          Theme
+        </label>
+        <div className="grid grid-cols-3 gap-3 mt-2">
+          {THEME_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setTheme(opt.value)}
+              className={cn(
+                "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center",
+                theme === opt.value
+                  ? "border-primary bg-primary/10"
+                  : "border-border-dark/50 hover:border-primary/30 bg-background-dark/30"
+              )}
+            >
+              <span
+                className={cn(
+                  "icon text-2xl",
+                  theme === opt.value ? "text-primary" : "text-text-muted"
+                )}
+              >
+                {opt.icon}
+              </span>
+              <span className="text-sm font-bold">{opt.label}</span>
+              <span className="text-xs text-text-muted">{opt.description}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── Main settings page ───────────────────────────────────────────────────────
 
 export default function WorkspaceSettingsPage() {
@@ -908,6 +962,9 @@ export default function WorkspaceSettingsPage() {
           </div>
         </div>
       </section>
+
+      {/* ── Appearance ────────────────────────────────────────────────── */}
+      <AppearanceSection />
 
       {/* ── Execution & Isolation ────────────────────────────────────────── */}
       <section className="glass-panel rounded-xl p-8 space-y-6">

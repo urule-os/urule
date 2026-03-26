@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import type { Approval } from "@/types";
 
 // ── Status config ──────────────────────────────────────────────────────────────
@@ -190,14 +191,7 @@ export default function ApprovalsPage() {
 
       {/* Approval list */}
       {isLoading ? (
-        <div className="space-y-3">
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="glass-panel rounded-xl p-5 h-20 animate-pulse"
-            />
-          ))}
-        </div>
+        <SkeletonList count={6} />
       ) : approvals.length === 0 ? (
         <div className="glass-panel rounded-xl p-16 text-center">
           <span className="icon text-5xl text-text-muted">

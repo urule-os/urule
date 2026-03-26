@@ -9,15 +9,15 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: "#0db9f2",
-        "background-dark": "#101e22",
-        "background-light": "#f5f8f8",
-        "surface-dark": "#182d34",
-        "border-dark": "#315a68",
-        "accent-dark": "#223f49",
-        "text-muted": "#90bccb",
-        "accent-success": "#0bda57",
-        "accent-warning": "#fa5f38",
+        primary: "var(--primary)",
+        "background-dark": "var(--background-dark)",
+        "background-light": "var(--background-light)",
+        "surface-dark": "var(--surface-dark)",
+        "border-dark": "var(--border-dark)",
+        "accent-dark": "var(--accent-dark)",
+        "text-muted": "var(--text-muted)",
+        "accent-success": "var(--accent-success)",
+        "accent-warning": "var(--accent-warning)",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],

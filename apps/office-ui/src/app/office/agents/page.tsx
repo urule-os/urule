@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { SkeletonCard } from "@/components/ui/Skeleton";
 import type { Agent, AgentStatus } from "@/types";
 
 // ── Status config ──────────────────────────────────────────────────────────────
@@ -206,8 +207,8 @@ export default function AgentsPage() {
       {/* Grid */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="glass-panel rounded-xl p-5 h-52 animate-pulse" />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonCard key={i} />
           ))}
         </div>
       ) : filtered.length === 0 ? (

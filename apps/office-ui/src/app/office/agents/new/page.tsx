@@ -7,6 +7,7 @@ import Link from "next/link";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { toast } from "@/store/useToastStore";
+import { SkeletonCard } from "@/components/ui/Skeleton";
 import type { ModelProvider } from "@/types";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -122,12 +123,12 @@ const ACCENT_COLORS = [
 
 function StepBar({ current }: { current: number }) {
   return (
-    <div className="flex items-center gap-2 mb-8" role="group" aria-label="Agent creation progress">
+    <div className="flex items-center gap-1.5 sm:gap-2 mb-4 sm:mb-8" role="group" aria-label="Agent creation progress">
       {STEPS.map((s, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center gap-1" aria-label={`Step ${i + 1}: ${s.label}`} aria-current={i === current ? "step" : undefined}>
+        <div key={i} className="flex-1 flex flex-col items-center gap-0.5 sm:gap-1" aria-label={`Step ${i + 1}: ${s.label}`} aria-current={i === current ? "step" : undefined}>
           <div
             className={cn(
-              "h-2 w-full rounded-full transition-all",
+              "h-1.5 sm:h-2 w-full rounded-full transition-all",
               i <= current ? "bg-primary" : "bg-surface-dark"
             )}
             role="progressbar"
@@ -137,11 +138,12 @@ function StepBar({ current }: { current: number }) {
           />
           <span
             className={cn(
-              "text-[10px] font-mono uppercase tracking-widest",
+              "text-[8px] sm:text-[10px] font-mono uppercase tracking-widest text-center",
               i <= current ? "text-primary" : "text-text-muted"
             )}
           >
-            {s.label}
+            <span className="hidden sm:inline">{s.label}</span>
+            <span className="sm:hidden">{i + 1}/{STEPS.length}</span>
           </span>
         </div>
       ))}
@@ -161,9 +163,9 @@ function AgentDetailModal({
   onSelect: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Agent details">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto glass-panel rounded-2xl border border-primary/20 p-8 neo-shadow">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true" aria-label="Agent details">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm hidden sm:block" onClick={onClose} />
+      <div className="relative w-full h-full sm:h-auto sm:max-w-2xl sm:max-h-[85vh] overflow-y-auto glass-panel sm:rounded-2xl border-0 sm:border border-primary/20 p-5 sm:p-8 neo-shadow bg-background-dark sm:bg-transparent">
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4">
@@ -312,6 +314,7 @@ function Step1({
   const [detailAgent, setDetailAgent] = useState<(typeof ALL_AGENTS)[0] | null>(null);
   const [isCustom, setIsCustom] = useState(false);
   const [allAgents, setAllAgents] = useState<(typeof ALL_AGENTS)>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(true);
   const [categories, setCategories] = useState<{ id: string; label: string; icon: string }[]>([]);
 
   // Fetch ALL packages from PackageHub (single source of truth)
@@ -381,8 +384,12 @@ function Step1({
           icon: CATEGORY_ICONS[id] || "folder",
         }));
         setCategories(cats);
+        setTemplatesLoading(false);
       })
-      .catch(() => toast.error("Failed to load templates", "Could not fetch agent templates from PackageHub."));
+      .catch(() => {
+        setTemplatesLoading(false);
+        toast.error("Failed to load templates", "Could not fetch agent templates from PackageHub.");
+      });
   }, []);
 
   const filtered = activeCategory === "all"
@@ -432,6 +439,13 @@ function Step1({
         </div>
 
         {/* Agent grid */}
+        {templatesLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" role="tabpanel" aria-label={`${activeCategory === "all" ? "All" : categories.find(c => c.id === activeCategory)?.label ?? activeCategory} agents`}>
           {filtered.map((agent) => {
             const isSelected = !isCustom && selectedAgent?.name === agent.name;
@@ -518,6 +532,7 @@ function Step1({
             );
           })}
         </div>
+        )}
 
         {/* Custom agent option */}
         <div
@@ -731,7 +746,7 @@ function Step2({
               <p className="text-[10px] text-text-muted">Unique identifier — assigned on deploy</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Name */}
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">Name *</label>
@@ -821,7 +836,7 @@ function Step2({
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 {providers.map((p) => {
                   const status = providerStatus[p.id];
                   const isDisabled = status === "error" || status === "testing";
@@ -887,7 +902,7 @@ function Step2({
               <h2 className="text-lg font-bold">Output Style</h2>
               <span className="text-[10px] text-text-muted font-mono">(controls response verbosity)</span>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {VERBOSITY_LEVELS.map((vl) => (
                 <label
                   key={vl.value}
@@ -914,7 +929,7 @@ function Step2({
               <h2 className="text-lg font-bold">Thinking Mode</h2>
               <span className="text-[10px] text-text-muted font-mono">(reasoning style + temperature)</span>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {THINKING_LEVELS.map((tl) => (
                 <label
                   key={tl.value}

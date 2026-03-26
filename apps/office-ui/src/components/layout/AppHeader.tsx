@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useSidebarStore } from "@/store/useSidebarStore";
 
 const PAGE_META: Record<string, { icon: string; title: string }> = {
   "/office": { icon: "dashboard", title: "Dashboard" },
@@ -28,18 +29,27 @@ function getPageMeta(pathname: string) {
 export function AppHeader() {
   const pathname = usePathname();
   const { user } = useAuthStore();
+  const { toggle } = useSidebarStore();
   const { icon, title } = getPageMeta(pathname);
 
   return (
-    <header className="h-16 shrink-0 flex items-center justify-between px-6 backdrop-blur-md border-b border-primary/10 z-10" role="banner">
-      {/* Left: page title */}
-      <div className="flex items-center gap-3">
+    <header className="h-16 shrink-0 flex items-center justify-between px-4 sm:px-6 backdrop-blur-md border-b border-primary/10 z-10" role="banner">
+      {/* Left: hamburger (mobile) + page title */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Hamburger menu button — visible only on mobile */}
+        <button
+          onClick={toggle}
+          className="lg:hidden size-10 rounded-lg hover:bg-primary/10 flex items-center justify-center transition-colors"
+          aria-label="Toggle sidebar menu"
+        >
+          <span className="icon text-text-muted text-2xl">menu</span>
+        </button>
         <span className="icon text-primary text-2xl">{icon}</span>
         <h2 className="font-bold text-lg">{title}</h2>
       </div>
 
       {/* Right: search + notifications + avatar */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         <div className="relative hidden md:block">
           <span className="icon absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-[18px]">
             search

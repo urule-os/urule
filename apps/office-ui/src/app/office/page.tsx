@@ -9,6 +9,7 @@ import api from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { OfficeView } from "@/components/office/OfficeView";
 import SandboxMonitor from "@/components/office/SandboxMonitor";
+import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
 import type { Agent, AgentStatus, OfficeStats, Approval, Integration, ActivityLog } from "@/types";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -290,7 +291,7 @@ export default function OfficeDashboard() {
   const [rightTab, setRightTab] = useState<RightTab>("overview");
   const [containerActionLoading, setContainerActionLoading] = useState<string | null>(null);
 
-  const { data: agents = [] } = useQuery<Agent[]>({
+  const { data: agents = [], isLoading: agentsLoading } = useQuery<Agent[]>({
     queryKey: ["agents"],
     queryFn: () => api.get("/agents").then((r) => r.data),
     refetchInterval: 15000,
@@ -399,15 +400,27 @@ export default function OfficeDashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard icon="smart_toy" label="Total Agents" value={agents.length} />
-        <StatCard icon="sensors" label="Active Now" value={activeAgents.length} color="text-accent-success" />
-        <StatCard icon="verified_user" label="Pending Approvals" value={stats?.approvals_pending ?? pendingApprovals.length} color="text-amber-400" />
-        <StatCard
-          icon="offline_bolt"
-          label="Offline"
-          value={stats?.agents_offline ?? agents.filter((a) => a.status === "offline").length}
-          color="text-slate-400"
-        />
+        {agentsLoading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="glass-panel p-6 rounded-2xl space-y-4">
+              <Skeleton className="h-10 w-10 rounded-lg" />
+              <Skeleton className="h-8 w-16" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+          ))
+        ) : (
+          <>
+            <StatCard icon="smart_toy" label="Total Agents" value={agents.length} />
+            <StatCard icon="sensors" label="Active Now" value={activeAgents.length} color="text-accent-success" />
+            <StatCard icon="verified_user" label="Pending Approvals" value={stats?.approvals_pending ?? pendingApprovals.length} color="text-amber-400" />
+            <StatCard
+              icon="offline_bolt"
+              label="Offline"
+              value={stats?.agents_offline ?? agents.filter((a) => a.status === "offline").length}
+              color="text-slate-400"
+            />
+          </>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-12 gap-6">
@@ -423,7 +436,13 @@ export default function OfficeDashboard() {
             </Link>
           </div>
 
-          {displayAgents.length === 0 ? (
+          {agentsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <SkeletonCard key={i} />
+              ))}
+            </div>
+          ) : displayAgents.length === 0 ? (
             <div className="glass-panel rounded-xl p-12 text-center">
               <span className="icon text-5xl text-text-muted">person_add</span>
               <p className="mt-4 font-bold">No agents deployed yet</p>
