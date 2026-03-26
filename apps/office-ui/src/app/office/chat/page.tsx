@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { toast } from "@/store/useToastStore";
 import type { Agent } from "@/types";
 
 interface ConversationListItem {
@@ -91,7 +92,7 @@ export default function ChatListPage() {
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
       router.push(`/office/chat/${data.id}`);
     } catch {
-      alert("Failed to create conversation. Check the agent ID.");
+      toast.error("Failed to create conversation", "Check the agent ID and try again.");
     }
   }
 

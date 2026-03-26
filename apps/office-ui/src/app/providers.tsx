@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { widgetRegistry, BUILTIN_MANIFESTS } from "@/widgets";
 import { BUILTIN_COMPONENTS } from "@/widgets/builtin";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ToastContainer } from "@/components/ui/Toast";
 
 function useWidgetRegistryInit() {
   const [initialized, setInitialized] = useState(false);
@@ -36,6 +38,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useWidgetRegistryInit();
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <ErrorBoundary>{children}</ErrorBoundary>
+      <ToastContainer />
+    </QueryClientProvider>
   );
 }

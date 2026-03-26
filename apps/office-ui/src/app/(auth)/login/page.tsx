@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
 import { useAuthStore } from "@/store/useAuthStore";
+import { toast } from "@/store/useToastStore";
 
 const schema = z.object({
   email: z.string().email("Enter a valid work email"),
@@ -180,7 +181,7 @@ export default function LoginPage() {
           {/* Sign in with SSO */}
           <button
             type="button"
-            onClick={() => alert("Coming soon")}
+            onClick={() => toast.info("Coming soon", "SSO login will be available in a future update.")}
             className="w-full bg-background-dark/30 border border-primary/10 rounded-lg py-3 text-sm font-bold text-slate-200 hover:bg-primary/5 transition-colors"
           >
             Sign in with SSO

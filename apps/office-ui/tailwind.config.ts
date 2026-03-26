@@ -37,11 +37,16 @@ const config: Config = {
       },
       animation: {
         "success-pulse": "success-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "slide-in-right": "slide-in-right 0.3s ease-out",
       },
       keyframes: {
         "success-pulse": {
           "0%, 100%": { opacity: "1", transform: "scale(1)" },
           "50%": { opacity: "0.8", transform: "scale(0.98)" },
+        },
+        "slide-in-right": {
+          "0%": { opacity: "0", transform: "translateX(100%)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
         },
       },
     },

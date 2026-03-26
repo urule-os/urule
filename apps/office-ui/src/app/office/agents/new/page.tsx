@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { toast } from "@/store/useToastStore";
 import type { ModelProvider } from "@/types";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -376,7 +377,7 @@ function Step1({
         }));
         setCategories(cats);
       })
-      .catch(() => {});
+      .catch(() => toast.error("Failed to load templates", "Could not fetch agent templates from PackageHub."));
   }, []);
 
   const filtered = activeCategory === "all"
