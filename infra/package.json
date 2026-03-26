@@ -1,0 +1,8 @@
+{
+  "name": "@urule/infra",
+  "version": "0.1.0",
+  "description": "Shared infrastructure configs, Docker Compose, and dev tooling for Urule",
+  "private": true,
+  "type": "module",
+  "license": "MIT"
+}

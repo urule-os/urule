@@ -1,0 +1,42 @@
+{
+  "name": "summarize-support-tickets",
+  "version": "1.0.0",
+  "type": "skill",
+  "description": "Summarizes support tickets into actionable bullet points with priority and sentiment",
+  "author": "urule",
+  "license": "MIT",
+  "keywords": ["support", "summarization", "tickets"],
+  "permissions": [
+    { "resource": "mcp:tool:zendesk:read-tickets", "level": "required" }
+  ],
+  "skill": {
+    "tools": ["zendesk:read-tickets", "text:summarize"],
+    "description": "Takes a support ticket ID or batch of tickets and produces a structured summary with priority level, customer sentiment, and recommended actions.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ticketIds": { "type": "array", "items": { "type": "string" } },
+        "maxTokens": { "type": "number", "default": 500 }
+      },
+      "required": ["ticketIds"]
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "summaries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ticketId": { "type": "string" },
+              "summary": { "type": "string" },
+              "priority": { "type": "string" },
+              "sentiment": { "type": "string" },
+              "recommendedActions": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    }
+  }
+}

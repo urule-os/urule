@@ -1,0 +1,300 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://urule.dev/schemas/package-manifest.json",
+  "title": "Urule Package Manifest",
+  "description": "Schema for Urule package manifests",
+  "type": "object",
+  "required": ["name", "version", "type", "description", "author", "license"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+(/[a-z0-9-]+)?$",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Package name (lowercase, hyphens, optional scope with /)"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.]+)?(\\+[a-zA-Z0-9.]+)?$",
+      "description": "Semantic version"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "personality",
+        "skill",
+        "mcp_connector",
+        "workflow",
+        "template",
+        "policy",
+        "widget",
+        "office",
+        "channel",
+        "orchestrator",
+        "runtime"
+      ],
+      "description": "Package type"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1
+    },
+    "license": {
+      "type": "string"
+    },
+    "homepage": {
+      "type": "string"
+    },
+    "repository": {
+      "type": "string"
+    },
+    "keywords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "maxItems": 20
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["packageName", "versionRange"],
+        "properties": {
+          "packageName": { "type": "string" },
+          "versionRange": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["resource", "level"],
+        "properties": {
+          "resource": { "type": "string" },
+          "level": { "type": "string", "enum": ["required", "optional"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "properties": {
+        "uruleVersion": { "type": "string" },
+        "runtimes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "orchestrators": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "hooks": {
+      "type": "object",
+      "properties": {
+        "preInstall": { "type": "string" },
+        "postInstall": { "type": "string" },
+        "preUninstall": { "type": "string" },
+        "postUninstall": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "signatures": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "personality": { "$ref": "#/definitions/personalityConfig" },
+    "skill": { "$ref": "#/definitions/skillConfig" },
+    "mcpConnector": { "$ref": "#/definitions/mcpConnectorConfig" },
+    "workflow": { "$ref": "#/definitions/workflowConfig" },
+    "template": { "$ref": "#/definitions/templateConfig" },
+    "policy": { "$ref": "#/definitions/policyConfig" },
+    "widget": { "$ref": "#/definitions/widgetConfig" },
+    "office": { "$ref": "#/definitions/officeConfig" },
+    "channel": { "$ref": "#/definitions/channelConfig" },
+    "orchestrator": { "$ref": "#/definitions/orchestratorConfig" },
+    "runtime": { "$ref": "#/definitions/runtimeConfig" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "personality" } } },
+      "then": { "required": ["personality"] }
+    },
+    {
+      "if": { "properties": { "type": { "const": "skill" } } },
+      "then": { "required": ["skill"] }
+    },
+    {
+      "if": { "properties": { "type": { "const": "mcp_connector" } } },
+      "then": { "required": ["mcpConnector"] }
+    },
+    {
+      "if": { "properties": { "type": { "const": "workflow" } } },
+      "then": { "required": ["workflow"] }
+    },
+    {
+      "if": { "properties": { "type": { "const": "template" } } },
+      "then": { "required": ["template"] }
+    },
+    {
+      "if": { "properties": { "type": { "const": "policy" } } },
+      "then": { "required": ["policy"] }
+    },
+    {
+      "if": { "properties": { "type": { "const": "widget" } } },
+      "then": { "required": ["widget"] }
+    },
+    {
+      "if": { "properties": { "type": { "const": "office" } } },
+      "then": { "required": ["office"] }
+    },
+    {
+      "if": { "properties": { "type": { "const": "channel" } } },
+      "then": { "required": ["channel"] }
+    },
+    {
+      "if": { "properties": { "type": { "const": "orchestrator" } } },
+      "then": { "required": ["orchestrator"] }
+    },
+    {
+      "if": { "properties": { "type": { "const": "runtime" } } },
+      "then": { "required": ["runtime"] }
+    }
+  ],
+  "definitions": {
+    "personalityConfig": {
+      "type": "object",
+      "required": ["systemPrompt"],
+      "properties": {
+        "systemPrompt": { "type": "string" },
+        "goals": { "type": "array", "items": { "type": "string" } },
+        "defaultTools": { "type": "array", "items": { "type": "string" } },
+        "memoryRules": { "type": "object" },
+        "operatingStyle": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "skillConfig": {
+      "type": "object",
+      "required": ["tools", "description"],
+      "properties": {
+        "tools": { "type": "array", "items": { "type": "string" } },
+        "description": { "type": "string" },
+        "inputSchema": { "type": "object" },
+        "outputSchema": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "mcpConnectorConfig": {
+      "type": "object",
+      "required": ["serverCommand"],
+      "properties": {
+        "serverCommand": { "type": "string" },
+        "serverArgs": { "type": "array", "items": { "type": "string" } },
+        "env": { "type": "object", "additionalProperties": { "type": "string" } },
+        "tools": { "type": "array", "items": { "type": "string" } },
+        "resources": { "type": "array", "items": { "type": "string" } },
+        "authType": { "type": "string", "enum": ["none", "api_key", "oauth2"] }
+      },
+      "additionalProperties": false
+    },
+    "workflowConfig": {
+      "type": "object",
+      "required": ["temporalWorkflowId", "taskQueue"],
+      "properties": {
+        "temporalWorkflowId": { "type": "string" },
+        "taskQueue": { "type": "string" },
+        "inputSchema": { "type": "object" },
+        "triggers": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "templateConfig": {
+      "type": "object",
+      "required": ["agents", "skills", "connectors"],
+      "properties": {
+        "agents": { "type": "array", "items": { "type": "string" } },
+        "skills": { "type": "array", "items": { "type": "string" } },
+        "connectors": { "type": "array", "items": { "type": "string" } },
+        "workflows": { "type": "array", "items": { "type": "string" } },
+        "policies": { "type": "array", "items": { "type": "string" } },
+        "widgets": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "policyConfig": {
+      "type": "object",
+      "required": ["rules", "engine", "scope"],
+      "properties": {
+        "rules": { "type": "array", "items": { "type": "string" } },
+        "engine": { "type": "string", "enum": ["opa", "openfga"] },
+        "scope": { "type": "string", "enum": ["workspace", "org", "global"] }
+      },
+      "additionalProperties": false
+    },
+    "widgetConfig": {
+      "type": "object",
+      "required": ["entrypoint", "mountPoints"],
+      "properties": {
+        "entrypoint": { "type": "string" },
+        "mountPoints": { "type": "array", "items": { "type": "string" } },
+        "dimensions": {
+          "type": "object",
+          "properties": {
+            "width": { "type": "number" },
+            "height": { "type": "number" }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "officeConfig": {
+      "type": "object",
+      "required": ["mapFile", "rooms"],
+      "properties": {
+        "mapFile": { "type": "string" },
+        "rooms": { "type": "array", "items": { "type": "string" } },
+        "theme": { "type": "string" },
+        "avatarSkins": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "channelConfig": {
+      "type": "object",
+      "required": ["channelType", "adapterEntrypoint"],
+      "properties": {
+        "channelType": { "type": "string" },
+        "adapterEntrypoint": { "type": "string" },
+        "configSchema": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "orchestratorConfig": {
+      "type": "object",
+      "required": ["adapterEntrypoint", "capabilities"],
+      "properties": {
+        "adapterEntrypoint": { "type": "string" },
+        "capabilities": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "runtimeConfig": {
+      "type": "object",
+      "required": ["profile", "capabilities"],
+      "properties": {
+        "image": { "type": "string" },
+        "profile": { "type": "string" },
+        "capabilities": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    }
+  }
+}

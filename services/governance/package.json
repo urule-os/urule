@@ -1,0 +1,25 @@
+{
+  "name": "@urule/governance",
+  "version": "0.1.0",
+  "description": "Combined OPA + OpenFGA policy/authorization gateway",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "fastify": "^5.3.3",
+    "nats": "^2.29.1",
+    "ulid": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.1"
+  }
+}

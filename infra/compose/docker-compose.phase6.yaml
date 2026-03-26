@@ -1,0 +1,153 @@
+###############################################################################
+# Phase 6: End-to-End UX Test Stack
+#
+# Boots the full stack for the UX test scenario:
+# - Infrastructure: PostgreSQL, NATS
+# - Services: Registry, Adapter (Anthropic), Approvals, State, PackageHub
+# - Frontend: Office UI
+#
+# Usage:
+#   docker compose -f docker-compose.phase6.yaml up --build
+#   Open http://localhost:3000
+###############################################################################
+
+include:
+  - docker-compose.infra.yaml
+
+services:
+  # Override postgres with schema init + seed scripts
+  postgres:
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql
+      - ./init-registry-schema.sh:/docker-entrypoint-initdb.d/02-init-registry-schema.sh:ro
+      - ./init-packagehub-schema.sh:/docker-entrypoint-initdb.d/03-init-packagehub-schema.sh:ro
+      - ./seed-packagehub.sql:/docker-entrypoint-initdb.d/04-seed-packagehub.sql:ro
+      - ./seed-registry.sql:/docker-entrypoint-initdb.d/05-seed-registry.sql:ro
+
+  # ── Core Services ──────────────────────────────────────────────────────────
+
+  registry:
+    build:
+      context: ../../urule-registry
+      dockerfile: Dockerfile
+    ports:
+      - '${URULE_REGISTRY_PORT:-3001}:3000'
+    environment:
+      PORT: '3000'
+      HOST: '0.0.0.0'
+      DATABASE_URL: postgres://urule:urule@postgres:5432/registry
+      NATS_URL: nats://nats:4222
+      ADAPTER_URL: http://adapter:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', "node -e \"fetch('http://localhost:3000/healthz').then(r=>{if(!r.ok)throw 1}).catch(()=>process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  adapter:
+    build:
+      context: ../../urule-langgraph-adapter
+      dockerfile: Dockerfile
+    ports:
+      - '${URULE_ADAPTER_PORT:-3002}:3000'
+    environment:
+      PORT: '3000'
+      NATS_URL: nats://nats:4222
+      REGISTRY_URL: http://registry:3000
+      APPROVALS_URL: http://approvals:3000
+      STATE_URL: http://state:3000
+      LANGGRAPH_SERVER_URL: http://localhost:8123
+    depends_on:
+      registry:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', "node -e \"fetch('http://localhost:3000/healthz').then(r=>{if(!r.ok)throw 1}).catch(()=>process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  approvals:
+    build:
+      context: ../../urule-approvals
+      dockerfile: Dockerfile
+    ports:
+      - '${URULE_APPROVALS_PORT:-3003}:3000'
+    environment:
+      PORT: '3000'
+      NATS_URL: nats://nats:4222
+    depends_on:
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', "node -e \"fetch('http://localhost:3000/healthz').then(r=>{if(!r.ok)throw 1}).catch(()=>process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  state:
+    build:
+      context: ../../urule-state
+      dockerfile: Dockerfile
+    ports:
+      - '${URULE_STATE_PORT:-3007}:3000'
+    environment:
+      PORT: '3000'
+      NATS_URL: nats://nats:4222
+    depends_on:
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', "node -e \"fetch('http://localhost:3000/healthz').then(r=>{if(!r.ok)throw 1}).catch(()=>process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  packagehub:
+    build:
+      context: ../../urule-packagehub
+      dockerfile: Dockerfile
+    ports:
+      - '${URULE_PACKAGEHUB_PORT:-3009}:3000'
+    environment:
+      PORT: '3000'
+      DATABASE_URL: postgres://urule:urule@postgres:5432/packagehub
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', "node -e \"fetch('http://localhost:3000/healthz').then(r=>{if(!r.ok)throw 1}).catch(()=>process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ── Frontend ───────────────────────────────────────────────────────────────
+
+  office-ui:
+    build:
+      context: ../../urule-office-ui
+      dockerfile: Dockerfile
+    ports:
+      - '${URULE_UI_PORT:-3000}:3000'
+    environment:
+      PORT: '3000'
+      NEXT_PUBLIC_REGISTRY_URL: http://localhost:${URULE_REGISTRY_PORT:-3001}
+      NEXT_PUBLIC_ADAPTER_URL: http://localhost:${URULE_ADAPTER_PORT:-3002}
+      NEXT_PUBLIC_APPROVALS_URL: http://localhost:${URULE_APPROVALS_PORT:-3003}
+      NEXT_PUBLIC_STATE_URL: http://localhost:${URULE_STATE_PORT:-3007}
+      NEXT_PUBLIC_PACKAGEHUB_URL: http://localhost:${URULE_PACKAGEHUB_PORT:-3009}
+    depends_on:
+      registry:
+        condition: service_healthy

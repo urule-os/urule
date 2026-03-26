@@ -1,0 +1,113 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: urule
+      POSTGRES_PASSWORD: urule
+      POSTGRES_DB: urule
+    ports:
+      - '${URULE_PG_PORT:-5500}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U urule']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nats:
+    image: nats:2-alpine
+    command: ['--jetstream', '--store_dir=/data', '-m', '8222']
+    ports:
+      - '${URULE_NATS_PORT:-4222}:4222'
+      - '${URULE_NATS_MONITOR_PORT:-8222}:8222'
+    volumes:
+      - natsdata:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:8222/healthz || exit 1']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  temporal:
+    image: temporalio/auto-setup:latest
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_USER: urule
+      POSTGRES_PWD: urule
+      POSTGRES_SEEDS: postgres
+    ports:
+      - '${URULE_TEMPORAL_PORT:-7233}:7233'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  temporal-ui:
+    image: temporalio/ui:latest
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+      TEMPORAL_CORS_ORIGINS: http://localhost:3000
+    ports:
+      - '${URULE_TEMPORAL_UI_PORT:-8280}:8080'
+    depends_on:
+      - temporal
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: urule
+      KC_DB_PASSWORD: urule
+      KC_HEALTH_ENABLED: 'true'
+    ports:
+      - '${URULE_KEYCLOAK_PORT:-8281}:8080'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  openfga:
+    image: openfga/openfga:latest
+    command: run
+    environment:
+      OPENFGA_DATASTORE_ENGINE: postgres
+      OPENFGA_DATASTORE_URI: postgres://urule:urule@postgres:5432/openfga?sslmode=disable
+    ports:
+      - '${URULE_OPENFGA_HTTP_PORT:-8282}:8080'
+      - '${URULE_OPENFGA_GRPC_PORT:-8283}:8081'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  opa:
+    image: openpolicyagent/opa:latest
+    command: run --server --addr :8181
+    ports:
+      - '${URULE_OPA_PORT:-8284}:8181'
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ['--config=/etc/otel-collector-config.yaml']
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - '${URULE_OTEL_GRPC_PORT:-4317}:4317'
+      - '${URULE_OTEL_HTTP_PORT:-4318}:4318'
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    environment:
+      COLLECTOR_OTLP_ENABLED: 'true'
+    ports:
+      - '${URULE_JAEGER_UI_PORT:-16686}:16686'
+      - '${URULE_JAEGER_HTTP_PORT:-14268}:14268'
+      - '${URULE_JAEGER_GRPC_PORT:-14250}:14250'
+
+volumes:
+  pgdata:
+  natsdata:
