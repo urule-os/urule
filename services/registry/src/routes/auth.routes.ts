@@ -1,6 +1,11 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import type { UruleUser } from '@urule/auth-middleware';
+import { AuditLogger } from '@urule/events';
+
+const audit = new AuditLogger('registry', (topic, data) => {
+  console.log(JSON.stringify({ audit: true, topic, ...data as Record<string, unknown> }));
+});
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -58,6 +63,11 @@ export function registerAuthRoutes(app: FastifyInstance) {
         expires_in: number;
         token_type: string;
       };
+
+      audit.authLogin(
+        { id: email, username: email },
+        `User "${email}" logged in`,
+      ).catch(() => {});
 
       return {
         access_token: tokens.access_token,

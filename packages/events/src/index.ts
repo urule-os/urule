@@ -12,6 +12,7 @@ export {
   CHANNEL_TOPICS,
   STATE_TOPICS,
   MCP_TOPICS,
+  AUDIT_TOPICS,
 } from './topics.js';
 
 // ─── Event Bus ──────────────────────────────────────────────────────
@@ -48,6 +49,11 @@ export type {
   SessionTerminatedEvent,
   SessionErrorEvent,
 } from './events/runtime.events.js';
+
+export type { AuditEvent } from './events/audit.events.js';
+
+// ─── Audit Logger ──────────────────────────────────────────────────
+export { AuditLogger } from './audit/audit-logger.js';
 
 // ─── Idempotency ────────────────────────────────────────────────────
 export { generateIdempotencyKey, deterministicKey } from './idempotency/key-generator.js';

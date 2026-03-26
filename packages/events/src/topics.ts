@@ -94,6 +94,19 @@ export const MCP_TOPICS = {
   TOOL_INVOKED: 'urule.mcp.tool.invoked',
 } as const;
 
+// ─── Audit Events ────────────────────────────────────────────────
+
+export const AUDIT_TOPICS = {
+  ENTITY_CREATED: 'urule.audit.entity.created',
+  ENTITY_UPDATED: 'urule.audit.entity.updated',
+  ENTITY_DELETED: 'urule.audit.entity.deleted',
+  AUTH_LOGIN: 'urule.audit.auth.login',
+  AUTH_LOGOUT: 'urule.audit.auth.logout',
+  APPROVAL_DECIDED: 'urule.audit.approval.decided',
+  CONFIG_CHANGED: 'urule.audit.config.changed',
+  ACCESS_DENIED: 'urule.audit.access.denied',
+} as const;
+
 /** All topic constants grouped by domain */
 export const TOPICS = {
   registry: REGISTRY_TOPICS,
@@ -104,4 +117,5 @@ export const TOPICS = {
   channels: CHANNEL_TOPICS,
   state: STATE_TOPICS,
   mcp: MCP_TOPICS,
+  audit: AUDIT_TOPICS,
 } as const;

@@ -5,6 +5,11 @@ import { z } from 'zod';
 import type { Database } from '../db/connection.js';
 import { providers } from '../db/schema/providers.js';
 import { workspaces } from '../db/schema/workspaces.js';
+import { AuditLogger } from '@urule/events';
+
+const audit = new AuditLogger('registry', (topic, data) => {
+  console.log(JSON.stringify({ audit: true, topic, ...data as Record<string, unknown> }));
+});
 
 const createProviderSchema = z.object({
   workspaceId: z.string().optional(),
@@ -118,6 +123,14 @@ export function registerProviderRoutes(app: FastifyInstance, db: Database) {
       reply.status(500).send({ error: { code: 'INSERT_FAILED', message: 'Failed to create provider' } });
       return;
     }
+
+    const user = (request as any).uruleUser;
+    audit.entityCreated(
+      { id: user?.id ?? 'anonymous', username: user?.username ?? 'anonymous' },
+      'provider', id, `Provider "${name}" (${provider}) created`,
+      { workspaceId },
+    ).catch(() => {});
+
     reply.status(201).send(toUiProvider(row as Record<string, unknown>));
   });
 
@@ -175,6 +188,13 @@ export function registerProviderRoutes(app: FastifyInstance, db: Database) {
         return;
       }
 
+      const user = (request as any).uruleUser;
+      audit.entityUpdated(
+        { id: user?.id ?? 'anonymous', username: user?.username ?? 'anonymous' },
+        'provider', providerId, `Provider "${row.name}" updated`,
+        { metadata: { fields: Object.keys(b) } },
+      ).catch(() => {});
+
       return toUiProvider(row as Record<string, unknown>);
     },
   );
@@ -187,6 +207,13 @@ export function registerProviderRoutes(app: FastifyInstance, db: Database) {
       reply.status(404).send({ error: { code: 'PROVIDER_NOT_FOUND', message: `Provider ${providerId} not found` } });
       return;
     }
+
+    const user = (request as any).uruleUser;
+    audit.entityDeleted(
+      { id: user?.id ?? 'anonymous', username: user?.username ?? 'anonymous' },
+      'provider', providerId, `Provider "${row.name}" deleted`,
+    ).catch(() => {});
+
     reply.status(204).send();
   });
 }

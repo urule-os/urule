@@ -6,6 +6,12 @@ import type { Database } from '../db/connection.js';
 import { agents } from '../db/schema/agents.js';
 import { providers } from '../db/schema/providers.js';
 import { workspaces } from '../db/schema/workspaces.js';
+import { AuditLogger } from '@urule/events';
+
+// Simple audit logger that logs to stdout (NATS integration can be added later)
+const audit = new AuditLogger('registry', (topic, data) => {
+  console.log(JSON.stringify({ audit: true, topic, ...data as Record<string, unknown> }));
+});
 
 const createAgentSchema = z.object({
   workspaceId: z.string().optional(),
@@ -119,6 +125,13 @@ export function registerAgentRoutes(app: FastifyInstance, db: Database) {
       updatedAt: now,
     }).returning();
 
+    const user = (request as any).uruleUser;
+    audit.entityCreated(
+      { id: user?.id ?? 'anonymous', username: user?.username ?? 'anonymous' },
+      'agent', id, `Agent "${name}" created`,
+      { workspaceId },
+    ).catch(() => {});
+
     reply.status(201).send(toUiAgent(agent as Record<string, unknown>));
   });
 
@@ -194,6 +207,14 @@ export function registerAgentRoutes(app: FastifyInstance, db: Database) {
         reply.status(404).send({ error: { code: 'AGENT_NOT_FOUND', message: `Agent ${agentId} not found` } });
         return;
       }
+
+      const user = (request as any).uruleUser;
+      audit.entityUpdated(
+        { id: user?.id ?? 'anonymous', username: user?.username ?? 'anonymous' },
+        'agent', agentId, `Agent status changed to "${status}"`,
+        { changes: { status: { after: status } } },
+      ).catch(() => {});
+
       return toUiAgent(agent as Record<string, unknown>);
     },
   );
@@ -219,6 +240,13 @@ export function registerAgentRoutes(app: FastifyInstance, db: Database) {
         reply.status(404).send({ error: { code: 'AGENT_NOT_FOUND', message: `Agent ${agentId} not found` } });
         return;
       }
+
+      const user = (request as any).uruleUser;
+      audit.entityUpdated(
+        { id: user?.id ?? 'anonymous', username: user?.username ?? 'anonymous' },
+        'agent', agentId, `Agent "${agent.name}" updated`,
+        { metadata: { fields: Object.keys(updates) } },
+      ).catch(() => {});
 
       return toUiAgent(agent as Record<string, unknown>);
     },
