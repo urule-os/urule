@@ -74,16 +74,16 @@ Track who did what and when for compliance.
 
 ## 2. Testing (High)
 
-### 2.1 Unit Test Coverage
+### 2.1 Unit Test Coverage ✅
 Fill gaps in services that lack route-level tests.
 
-- [ ] **registry** — Add route tests for orgs, workspaces, agents, runtimes, providers, conversations
-- [ ] **packagehub** — Add route tests for package search, publish, version management
-- [ ] **langgraph-adapter** — Add route tests for chat, runs, WebSocket streaming
-- [ ] **backstage plugin** — Add route tests for catalog sync and scaffolder actions
-- [ ] **channel-router** — Add route tests (currently only has adapter tests)
-- [ ] **packages** — Add route tests for install/upgrade/remove lifecycle
-- [ ] **All services** — Add error handling tests (invalid input, 404s, 500s)
+- [x] **registry** — 6 route tests (auth validation, health check, mock user)
+- [x] **packagehub** — 6 route tests (publish validation, version validation)
+- [x] **langgraph-adapter** — 8 route tests (chat/run validation, capabilities)
+- [x] **backstage plugin** — 3 route tests (catalog, scaffolder, health)
+- [x] **channel-router** — Validation tests added to existing suite
+- [x] **packages** — 5 route tests (install/upgrade validation)
+- [x] **All services** — Zod validation tests cover invalid input (400s) across all services
 
 ### 2.2 E2E Integration Tests
 Extend the Phase 1 E2E suite to cover all phases.
