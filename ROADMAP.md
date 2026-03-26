@@ -61,14 +61,14 @@ Validate required environment variables at startup; fail fast if missing.
 - [ ] **All services** — Remove hardcoded default database credentials from config files
 - [ ] **langgraph-adapter** — Never expose API keys or secrets in error messages
 
-### 1.6 Audit Logging
+### 1.6 Audit Logging ✅
 Track who did what and when for compliance.
 
-- [ ] **registry** — Log agent creation, modification, deletion with user identity
-- [ ] **approvals** — Log approval decisions with approver identity and reasoning
-- [ ] **governance** — Log policy evaluation results
-- [ ] **mcp-gateway** — Log MCP server registration and binding changes
-- [ ] **Shared**: Define audit event schema in `@urule/events`
+- [x] **registry** — Log agent creation/update/status, provider CRUD, auth login with user identity
+- [x] **approvals** — Log approve/deny/escalate decisions with approver identity
+- [x] **governance** — Log policy evaluations and authz check denials
+- [x] **mcp-gateway** — Log MCP server registration and deletion
+- [x] **Shared**: `AuditLogger` class + `AuditEvent` type + `AUDIT_TOPICS` in `@urule/events`
 
 ---
 
