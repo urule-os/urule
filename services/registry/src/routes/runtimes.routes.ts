@@ -1,8 +1,16 @@
 import type { FastifyInstance } from 'fastify';
 import { ulid } from 'ulid';
 import { eq } from 'drizzle-orm';
+import { z } from 'zod';
 import type { Database } from '../db/connection.js';
 import { runtimes } from '../db/schema/runtimes.js';
+
+const createRuntimeSchema = z.object({
+  workspaceId: z.string().min(1),
+  provider: z.string().min(1),
+  profile: z.string().min(1),
+  capabilities: z.record(z.unknown()).optional(),
+});
 
 export function registerRuntimeRoutes(app: FastifyInstance, db: Database) {
   // List runtimes for a workspace
@@ -15,7 +23,11 @@ export function registerRuntimeRoutes(app: FastifyInstance, db: Database) {
   app.post<{
     Body: { workspaceId: string; provider: string; profile: string; capabilities?: Record<string, unknown> };
   }>('/api/v1/runtimes', async (request, reply) => {
-    const { workspaceId, provider, profile, capabilities } = request.body;
+    const parsed = createRuntimeSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
+    }
+    const { workspaceId, provider, profile, capabilities } = parsed.data;
     const id = ulid();
     const now = new Date();
 

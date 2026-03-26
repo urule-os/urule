@@ -1,5 +1,11 @@
 import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
 import type { UruleUser } from '@urule/auth-middleware';
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
 
 /**
  * Auth routes — bridge between the Office UI and Keycloak.
@@ -19,11 +25,11 @@ export function registerAuthRoutes(app: FastifyInstance) {
   app.post<{
     Body: { email: string; password: string };
   }>('/auth/login', async (request, reply) => {
-    const { email, password } = request.body;
-
-    if (!email || !password) {
-      return reply.code(400).send({ error: 'Email and password are required' });
+    const parsed = loginSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
     }
+    const { email, password } = parsed.data;
 
     try {
       const tokenUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/token`;

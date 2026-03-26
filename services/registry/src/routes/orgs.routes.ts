@@ -1,8 +1,14 @@
 import type { FastifyInstance } from 'fastify';
 import { ulid } from 'ulid';
 import { eq } from 'drizzle-orm';
+import { z } from 'zod';
 import type { Database } from '../db/connection.js';
 import { orgs } from '../db/schema/orgs.js';
+
+const createOrgSchema = z.object({
+  name: z.string().min(1).max(100),
+  slug: z.string().min(1).max(50).regex(/^[a-z0-9-]+$/),
+});
 
 export function registerOrgRoutes(app: FastifyInstance, db: Database) {
   // List orgs
@@ -12,7 +18,11 @@ export function registerOrgRoutes(app: FastifyInstance, db: Database) {
 
   // Create org
   app.post<{ Body: { name: string; slug: string } }>('/api/v1/orgs', async (request, reply) => {
-    const { name, slug } = request.body;
+    const parsed = createOrgSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
+    }
+    const { name, slug } = parsed.data;
     const id = ulid();
     const now = new Date();
 

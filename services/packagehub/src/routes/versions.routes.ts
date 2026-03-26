@@ -1,9 +1,17 @@
 import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
 import { ulid } from 'ulid';
 import { eq, and, desc } from 'drizzle-orm';
 import type { Database } from '../db/connection.js';
 import { packages } from '../db/schema/packages.js';
 import { packageVersions } from '../db/schema/versions.js';
+
+const publishVersionSchema = z.object({
+  version: z.string().regex(/^\d+\.\d+\.\d+/),
+  manifest: z.object({}).passthrough(),
+  readme: z.string().optional(),
+  checksum: z.string().optional(),
+});
 
 export function registerVersionRoutes(app: FastifyInstance, db: Database) {
   // List versions for a package
@@ -38,8 +46,12 @@ export function registerVersionRoutes(app: FastifyInstance, db: Database) {
       checksum?: string;
     };
   }>('/api/v1/packages/:name/versions', async (request, reply) => {
+    const parsed = publishVersionSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
+    }
     const { name } = request.params;
-    const { version, manifest, readme, checksum } = request.body;
+    const { version, manifest, readme, checksum } = parsed.data;
 
     const [pkg] = await db.select().from(packages).where(eq(packages.name, name));
     if (!pkg) {

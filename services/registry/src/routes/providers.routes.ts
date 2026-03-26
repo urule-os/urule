@@ -1,9 +1,40 @@
 import type { FastifyInstance } from 'fastify';
 import { ulid } from 'ulid';
 import { eq } from 'drizzle-orm';
+import { z } from 'zod';
 import type { Database } from '../db/connection.js';
 import { providers } from '../db/schema/providers.js';
 import { workspaces } from '../db/schema/workspaces.js';
+
+const createProviderSchema = z.object({
+  workspaceId: z.string().optional(),
+  workspace_id: z.string().optional(),
+  name: z.string().min(1),
+  provider: z.string().min(1),
+  apiKey: z.string().optional(),
+  api_key: z.string().optional(),
+  modelName: z.string().optional(),
+  model_name: z.string().optional(),
+  baseUrl: z.string().optional(),
+  base_url: z.string().optional(),
+  isDefault: z.boolean().optional(),
+  is_default: z.boolean().optional(),
+});
+
+const updateProviderSchema = z.object({
+  name: z.string().min(1).optional(),
+  provider: z.string().min(1).optional(),
+  apiKey: z.string().optional(),
+  api_key: z.string().optional(),
+  modelName: z.string().optional(),
+  model_name: z.string().optional(),
+  baseUrl: z.string().optional(),
+  base_url: z.string().optional(),
+  isDefault: z.boolean().optional(),
+  is_default: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+  is_active: z.boolean().optional(),
+}).strict();
 
 function maskApiKey(key: string): string {
   if (!key || key.length < 8) return '****';
@@ -41,7 +72,11 @@ export function registerProviderRoutes(app: FastifyInstance, db: Database) {
   app.post<{
     Body: Record<string, unknown>;
   }>('/api/v1/providers', async (request, reply) => {
-    const b = request.body;
+    const parsed = createProviderSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
+    }
+    const b = parsed.data;
     let workspaceId = (b.workspaceId ?? b.workspace_id ?? '') as string;
     // Resolve to actual workspace if not provided
     if (!workspaceId || workspaceId === 'default') {
@@ -112,8 +147,12 @@ export function registerProviderRoutes(app: FastifyInstance, db: Database) {
   app.patch<{ Params: { providerId: string }; Body: Record<string, unknown> }>(
     '/api/v1/providers/:providerId',
     async (request, reply) => {
+      const parsed = updateProviderSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
+      }
       const { providerId } = request.params;
-      const b = request.body;
+      const b = parsed.data;
 
       // Map snake_case to camelCase for Drizzle
       const updates: Record<string, unknown> = { updatedAt: new Date() };

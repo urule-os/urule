@@ -1,8 +1,23 @@
 import type { FastifyInstance } from 'fastify';
 import { ulid } from 'ulid';
 import { eq } from 'drizzle-orm';
+import { z } from 'zod';
 import type { Database } from '../db/connection.js';
 import { workspaces } from '../db/schema/workspaces.js';
+
+const createWorkspaceSchema = z.object({
+  orgId: z.string().min(1),
+  name: z.string().min(1).max(100),
+  slug: z.string().min(1).max(50).regex(/^[a-z0-9-]+$/),
+  description: z.string().optional(),
+});
+
+const updateWorkspaceSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  slug: z.string().min(1).max(50).regex(/^[a-z0-9-]+$/).optional(),
+  description: z.string().optional(),
+  status: z.string().optional(),
+}).strict();
 
 /** Transform Drizzle workspace row to UI-expected snake_case. */
 function toUiWorkspace(row: Record<string, unknown>) {
@@ -51,12 +66,16 @@ export function registerWorkspaceRoutes(app: FastifyInstance, db: Database) {
 
   // Update current workspace (for settings page)
   app.patch('/api/v1/workspaces/current', async (request, reply) => {
+    const parsed = updateWorkspaceSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
+    }
     const rows = await db.select().from(workspaces).limit(1);
     if (rows.length === 0) {
       reply.status(404).send({ error: { code: 'NO_WORKSPACE', message: 'No workspace configured' } });
       return;
     }
-    const updates = request.body as Record<string, unknown>;
+    const updates = parsed.data as Record<string, unknown>;
     const [updated] = await db.update(workspaces)
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(workspaces.id, rows[0]!.id))
@@ -81,7 +100,11 @@ export function registerWorkspaceRoutes(app: FastifyInstance, db: Database) {
   app.post<{ Body: { orgId: string; name: string; slug: string; description?: string } }>(
     '/api/v1/workspaces',
     async (request, reply) => {
-      const { orgId, name, slug, description } = request.body;
+      const parsed = createWorkspaceSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
+      }
+      const { orgId, name, slug, description } = parsed.data;
       const id = ulid();
       const now = new Date();
 

@@ -1,10 +1,26 @@
 import type { FastifyInstance } from 'fastify';
 import { ulid } from 'ulid';
 import { eq, desc, sql } from 'drizzle-orm';
+import { z } from 'zod';
 import type { Database } from '../db/connection.js';
 import { conversations, conversationAgents, messages } from '../db/schema/conversations.js';
 import { agents } from '../db/schema/agents.js';
 import { workspaces } from '../db/schema/workspaces.js';
+
+const createConversationSchema = z.object({
+  workspaceId: z.string().min(1),
+  title: z.string().min(1).max(200),
+  type: z.string().optional(),
+  agentIds: z.array(z.string()).optional(),
+});
+
+const createMessageSchema = z.object({
+  senderId: z.string().min(1),
+  content: z.string().min(1),
+  senderType: z.string().optional(),
+  contentType: z.string().optional(),
+  actionButtons: z.array(z.unknown()).optional(),
+});
 
 /** Transform a Drizzle conversation row to UI-expected snake_case. */
 function toUiConversation(row: Record<string, unknown>) {
@@ -49,8 +65,12 @@ export function registerConversationRoutes(app: FastifyInstance, db: Database) {
   app.post<{
     Body: { workspaceId: string; title: string; type?: string; agentIds?: string[] };
   }>('/api/v1/conversations', async (request, reply) => {
-    let { workspaceId } = request.body;
-    const { title, type, agentIds } = request.body;
+    const parsed = createConversationSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
+    }
+    let { workspaceId } = parsed.data;
+    const { title, type, agentIds } = parsed.data;
     // Resolve workspace if not provided
     if (!workspaceId || workspaceId === 'default') {
       const [ws] = await db.select().from(workspaces).limit(1);
@@ -172,8 +192,12 @@ export function registerConversationRoutes(app: FastifyInstance, db: Database) {
     Params: { conversationId: string };
     Body: { senderId: string; senderType?: string; content: string; contentType?: string; actionButtons?: unknown[] };
   }>('/api/v1/conversations/:conversationId/messages', async (request, reply) => {
+    const parsed = createMessageSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
+    }
     const { conversationId } = request.params;
-    const { senderId, senderType, content, contentType, actionButtons } = request.body;
+    const { senderId, senderType, content, contentType, actionButtons } = parsed.data;
 
     // Verify conversation exists
     const [conv] = await db.select().from(conversations).where(eq(conversations.id, conversationId));

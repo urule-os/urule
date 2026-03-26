@@ -19,7 +19,8 @@
     "fastify": "^5.0.0",
     "semver": "^7.6.0",
     "simple-git": "^3.27.0",
-    "ulid": "^2.3.0"
+    "ulid": "^2.3.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

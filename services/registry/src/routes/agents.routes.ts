@@ -1,10 +1,33 @@
 import type { FastifyInstance } from 'fastify';
 import { ulid } from 'ulid';
 import { eq } from 'drizzle-orm';
+import { z } from 'zod';
 import type { Database } from '../db/connection.js';
 import { agents } from '../db/schema/agents.js';
 import { providers } from '../db/schema/providers.js';
 import { workspaces } from '../db/schema/workspaces.js';
+
+const createAgentSchema = z.object({
+  workspaceId: z.string().optional(),
+  name: z.string().min(1).max(100),
+  description: z.string().optional(),
+  config: z.record(z.unknown()).optional(),
+});
+
+const agentStatusSchema = z.object({
+  status: z.enum(['active', 'idle', 'offline', 'error', 'paused']),
+});
+
+const updateAgentSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().optional(),
+  config: z.record(z.unknown()).optional(),
+  status: z.string().optional(),
+  workspaceId: z.string().optional(),
+  personalityPackId: z.string().optional(),
+  skillPacks: z.array(z.unknown()).optional(),
+  mcpBindings: z.array(z.unknown()).optional(),
+}).strict();
 
 /** Transform a Drizzle agent row into the shape the UI expects (snake_case + derived fields). */
 function toUiAgent(row: Record<string, unknown>, provider?: Record<string, unknown> | null) {
@@ -69,8 +92,12 @@ export function registerAgentRoutes(app: FastifyInstance, db: Database) {
   app.post<{
     Body: { workspaceId?: string; name: string; description?: string; config?: Record<string, unknown> };
   }>('/api/v1/agents', async (request, reply) => {
-    let { workspaceId } = request.body;
-    const { name, description, config } = request.body;
+    const parsed = createAgentSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
+    }
+    let { workspaceId } = parsed.data;
+    const { name, description, config } = parsed.data;
     // Resolve workspace if not provided
     if (!workspaceId || workspaceId === 'default') {
       const [ws] = await db.select().from(workspaces).limit(1);
@@ -152,8 +179,12 @@ export function registerAgentRoutes(app: FastifyInstance, db: Database) {
   app.post<{ Params: { agentId: string }; Body: { status: string } }>(
     '/api/v1/agents/:agentId/status',
     async (request, reply) => {
+      const parsed = agentStatusSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
+      }
       const { agentId } = request.params;
-      const { status } = request.body;
+      const { status } = parsed.data;
       const [agent] = await db
         .update(agents)
         .set({ status, updatedAt: new Date() })
@@ -171,8 +202,12 @@ export function registerAgentRoutes(app: FastifyInstance, db: Database) {
   app.patch<{ Params: { agentId: string }; Body: Record<string, unknown> }>(
     '/api/v1/agents/:agentId',
     async (request, reply) => {
+      const parsed = updateAgentSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
+      }
       const { agentId } = request.params;
-      const updates = request.body;
+      const updates = parsed.data;
 
       const [agent] = await db
         .update(agents)

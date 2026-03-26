@@ -3,6 +3,58 @@ import type { RoomManager } from '../services/room-manager.js';
 import type { PresenceManager } from '../services/presence-manager.js';
 import type { TaskManager } from '../services/task-manager.js';
 import type { WidgetStateManager } from '../services/widget-state-manager.js';
+import { z } from 'zod';
+
+// -- Zod Schemas ------------------------------------------------------
+
+const createRoomSchema = z.object({
+  workspaceId: z.string(),
+  name: z.string().min(1),
+  type: z.enum(['office', 'meeting', 'private', 'public']),
+  description: z.string().optional(),
+  capacity: z.number().positive().optional(),
+});
+
+const statusEnum = z.enum(['online', 'away', 'busy', 'offline']);
+
+const joinPresenceSchema = z.object({
+  userId: z.string(),
+  status: statusEnum.optional(),
+  workspaceId: z.string(),
+});
+
+const updatePresenceSchema = z.object({
+  status: statusEnum,
+});
+
+const createTaskSchema = z.object({
+  workspaceId: z.string(),
+  title: z.string().min(1),
+  description: z.string().optional(),
+  status: z.enum(['todo', 'in_progress', 'review', 'done', 'cancelled']).optional(),
+  priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
+  assigneeId: z.string().optional(),
+  creatorId: z.string(),
+  labels: z.array(z.string()).optional(),
+  dueDate: z.string().optional(),
+  roomId: z.string().optional(),
+});
+
+const assignTaskSchema = z.object({
+  assigneeId: z.string(),
+  reason: z.string().optional(),
+});
+
+const putWidgetStateSchema = z.object({
+  workspaceId: z.string(),
+  state: z.object({}).passthrough(),
+});
+
+const patchWidgetStateSchema = z.object({
+  patch: z.object({}).passthrough(),
+});
+
+// -- Routes -----------------------------------------------------------
 
 export interface StateRouteServices {
   roomManager: RoomManager;
@@ -17,17 +69,11 @@ export function registerStateRoutes(app: FastifyInstance, services: StateRouteSe
   // -- Rooms ---------------------------------------------------------
 
   app.post('/api/v1/rooms', async (req, reply) => {
-    const body = req.body as {
-      workspaceId: string;
-      name: string;
-      type: 'office' | 'meeting' | 'private' | 'public';
-      description?: string;
-      capacity?: number;
-    };
-    if (!body.workspaceId || !body.name || !body.type) {
-      return reply.status(400).send({ error: 'Missing required fields: workspaceId, name, type' });
+    const parsed = createRoomSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
     }
-    const room = roomManager.createRoom(body);
+    const room = roomManager.createRoom(parsed.data);
     return reply.status(201).send(room);
   });
 
@@ -72,14 +118,11 @@ export function registerStateRoutes(app: FastifyInstance, services: StateRouteSe
 
   app.post('/api/v1/rooms/:roomId/presence', async (req, reply) => {
     const { roomId } = req.params as { roomId: string };
-    const { userId, status, workspaceId } = req.body as {
-      userId: string;
-      status?: 'online' | 'away' | 'busy' | 'offline';
-      workspaceId: string;
-    };
-    if (!userId || !workspaceId) {
-      return reply.status(400).send({ error: 'Missing required fields: userId, workspaceId' });
+    const parsed = joinPresenceSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
     }
+    const { userId, status, workspaceId } = parsed.data;
     const presence = presenceManager.join(userId, roomId, workspaceId, status);
     return reply.status(201).send(presence);
   });
@@ -98,10 +141,11 @@ export function registerStateRoutes(app: FastifyInstance, services: StateRouteSe
 
   app.patch('/api/v1/rooms/:roomId/presence/:userId', async (req, reply) => {
     const { roomId, userId } = req.params as { roomId: string; userId: string };
-    const { status } = req.body as { status: 'online' | 'away' | 'busy' | 'offline' };
-    if (!status) {
-      return reply.status(400).send({ error: 'Missing required field: status' });
+    const parsed = updatePresenceSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
     }
+    const { status } = parsed.data;
     const presence = presenceManager.updateStatus(userId, roomId, status);
     if (!presence) {
       return reply.status(404).send({ error: 'Presence not found' });
@@ -112,22 +156,11 @@ export function registerStateRoutes(app: FastifyInstance, services: StateRouteSe
   // -- Tasks ---------------------------------------------------------
 
   app.post('/api/v1/tasks', async (req, reply) => {
-    const body = req.body as {
-      workspaceId: string;
-      roomId?: string;
-      title: string;
-      description?: string;
-      status?: 'todo' | 'in_progress' | 'review' | 'done' | 'cancelled';
-      priority?: 'low' | 'medium' | 'high' | 'urgent';
-      assigneeId?: string;
-      creatorId: string;
-      labels?: string[];
-      dueDate?: string;
-    };
-    if (!body.workspaceId || !body.title || !body.creatorId) {
-      return reply.status(400).send({ error: 'Missing required fields: workspaceId, title, creatorId' });
+    const parsed = createTaskSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
     }
-    const task = taskManager.createTask(body);
+    const task = taskManager.createTask(parsed.data);
     return reply.status(201).send(task);
   });
 
@@ -174,10 +207,11 @@ export function registerStateRoutes(app: FastifyInstance, services: StateRouteSe
 
   app.post('/api/v1/tasks/:taskId/assign', async (req, reply) => {
     const { taskId } = req.params as { taskId: string };
-    const { assigneeId, reason } = req.body as { assigneeId: string; reason?: string };
-    if (!assigneeId) {
-      return reply.status(400).send({ error: 'Missing required field: assigneeId' });
+    const parsed = assignTaskSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
     }
+    const { assigneeId, reason } = parsed.data;
     const transfer = taskManager.assignTask(taskId, assigneeId, reason);
     if (!transfer) {
       return reply.status(404).send({ error: 'Task not found' });
@@ -208,20 +242,22 @@ export function registerStateRoutes(app: FastifyInstance, services: StateRouteSe
 
   app.put('/api/v1/widget-state/:instanceId', async (req, reply) => {
     const { instanceId } = req.params as { instanceId: string };
-    const { workspaceId, state } = req.body as { workspaceId: string; state: Record<string, unknown> };
-    if (!workspaceId || !state) {
-      return reply.status(400).send({ error: 'Missing required fields: workspaceId, state' });
+    const parsed = putWidgetStateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
     }
+    const { workspaceId, state } = parsed.data;
     const widgetState = widgetStateManager.setState(instanceId, workspaceId, state);
     return reply.send(widgetState);
   });
 
   app.patch('/api/v1/widget-state/:instanceId', async (req, reply) => {
     const { instanceId } = req.params as { instanceId: string };
-    const { patch } = req.body as { patch: Record<string, unknown> };
-    if (!patch) {
-      return reply.status(400).send({ error: 'Missing required field: patch' });
+    const parsed = patchWidgetStateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
     }
+    const { patch } = parsed.data;
     const widgetState = widgetStateManager.patchState(instanceId, patch);
     if (!widgetState) {
       return reply.status(404).send({ error: 'Widget state not found' });

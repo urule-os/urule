@@ -1,10 +1,31 @@
 import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
 import { ulid } from 'ulid';
 import { eq, desc } from 'drizzle-orm';
 import type { Database } from '../db/connection.js';
 import { packages } from '../db/schema/packages.js';
 import { packageVersions } from '../db/schema/versions.js';
 import { SearchService } from '../services/search.js';
+
+const publishPackageSchema = z.object({
+  name: z.string().min(1),
+  type: z.string(),
+  description: z.string().optional(),
+  author: z.string().min(1),
+  repository: z.string().url().optional(),
+  homepage: z.string().url().optional(),
+  license: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+const searchQuerySchema = z.object({
+  q: z.string().optional(),
+  type: z.string().optional(),
+  verified: z.string().optional(),
+  sort: z.string().optional(),
+  limit: z.coerce.number().max(100).optional(),
+  offset: z.coerce.number().optional(),
+});
 
 /** Attach the latest non-yanked version to each package row. */
 async function attachLatestVersions(db: Database, pkgs: Record<string, unknown>[]) {
@@ -41,14 +62,18 @@ export function registerPackageRoutes(app: FastifyInstance, db: Database) {
       limit?: string;
       offset?: string;
     };
-  }>('/api/v1/packages', async (request) => {
-    const { q, type, verified, sort, limit } = request.query;
+  }>('/api/v1/packages', async (request, reply) => {
+    const parsed = searchQuerySchema.safeParse(request.query);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
+    }
+    const { q, type, verified, sort, limit } = parsed.data;
 
     let results;
     if (sort === 'popular') {
-      results = await searchService.getPopular(limit ? parseInt(limit, 10) : undefined);
+      results = await searchService.getPopular(limit);
     } else if (sort === 'recent') {
-      results = await searchService.getRecent(limit ? parseInt(limit, 10) : undefined);
+      results = await searchService.getRecent(limit);
     } else {
       results = await searchService.search(q ?? '', {
         type,
@@ -71,7 +96,11 @@ export function registerPackageRoutes(app: FastifyInstance, db: Database) {
       tags?: string[];
     };
   }>('/api/v1/packages', async (request, reply) => {
-    const { name, type, description, author, repository, homepage, license, tags } = request.body;
+    const parsed = publishPackageSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Validation failed', details: parsed.error.issues });
+    }
+    const { name, type, description, author, repository, homepage, license, tags } = parsed.data;
     const id = ulid();
     const now = new Date();
 
