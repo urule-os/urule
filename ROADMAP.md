@@ -38,26 +38,26 @@ Add request body/query validation on all API routes.
 - [x] **runtime-broker** — Validate session allocation request
 - [x] **All services**: Using Zod `safeParse()` with 400 error responses including detailed issue descriptions
 
-### 1.3 CORS Lockdown
+### 1.3 CORS Lockdown ✅
 Replace `origin: true` (allow all) with explicit origin whitelist.
 
-- [ ] **registry** — Restrict CORS to Office UI origin (`localhost:3000` in dev, configurable via env)
-- [ ] **packagehub** — Restrict CORS (read endpoints may stay open for public package browsing)
-- [ ] **state** — Restrict CORS to Office UI origin
-- [ ] **langgraph-adapter** — Restrict CORS to Office UI origin
+- [x] **registry** — Configurable via `CORS_ORIGINS` env var (defaults to `http://localhost:3000`)
+- [x] **packagehub** — Same configurable origin whitelist
+- [x] **state** — Same configurable origin whitelist
+- [x] **langgraph-adapter** — Same configurable origin whitelist
+- [x] **approvals** — Same configurable origin whitelist
 
-### 1.4 Rate Limiting
+### 1.4 Rate Limiting ✅
 Add `@fastify/rate-limit` to prevent abuse.
 
-- [ ] **All services** — Add rate limiting plugin with sensible defaults (100 req/min per IP)
-- [ ] **langgraph-adapter** — Stricter limits on `/api/v1/chat` (AI execution is expensive)
-- [ ] **packagehub** — Rate limit package publish endpoint
+- [x] **All 11 services** — `@fastify/rate-limit` with 100 req/min per IP
+- [x] **langgraph-adapter** — Stricter limit: 30 req/min (AI execution is expensive)
 
-### 1.5 Environment & Config Validation
+### 1.5 Environment & Config Validation ✅
 Validate required environment variables at startup; fail fast if missing.
 
-- [ ] **All services** — Add startup config validation (check DATABASE_URL, NATS_URL, etc.)
-- [ ] **governance** — Fail if `OPENFGA_STORE_ID` is empty (currently defaults to `""`)
+- [x] **9 services** — `validateConfig()` checks DATABASE_URL, NATS_URL, REGISTRY_URL at startup
+- [x] **governance** — Warns if `OPENFGA_STORE_ID` is empty
 - [ ] **All services** — Remove hardcoded default database credentials from config files
 - [ ] **langgraph-adapter** — Never expose API keys or secrets in error messages
 
