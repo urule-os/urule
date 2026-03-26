@@ -215,30 +215,28 @@ Replace fragile init scripts with proper versioned migrations.
 
 ## 5. Developer Experience (Medium)
 
-### 5.1 Monorepo Tooling
-- [ ] **urule (main repo)** — Add root `package.json` with npm workspaces config
-- [ ] **urule** — Add `npm run test:all` command that runs tests across all packages
-- [ ] **urule** — Add `npm run build:all` command
-- [ ] **urule** — Add `npm run lint:all` command
+### 5.1 Monorepo Tooling ✅
+- [x] **urule** — Root `package.json` with npm workspaces (`packages/*`, `services/*`, `plugins/*`, `apps/*`)
+- [x] **urule** — `npm run test:all`, `build:all`, `lint:all`, `typecheck:all` commands
 - [ ] **urule** — Consider Turborepo for incremental builds and caching
 
-### 5.2 Shared Configurations
-- [ ] **urule** — Create shared `tsconfig.base.json` (currently 18 near-identical copies)
-- [ ] **urule** — Create shared ESLint config package
-- [ ] **urule** — Create shared Prettier config
-- [ ] **urule** — Pin Node.js version with `.nvmrc` or `.node-version`
+### 5.2 Shared Configurations ✅
+- [x] **urule** — `tsconfig.base.json` shared TypeScript config
+- [x] **urule** — `.eslintrc.json` shared ESLint config
+- [x] **urule** — `.prettierrc` shared Prettier config
+- [x] **urule** — `.nvmrc` pinned to Node 20
 
-### 5.3 Dependency Alignment
-- [ ] **All packages** — Align TypeScript version (currently ranges from `^5.3.3` to `^5.8.3`)
-- [ ] **All packages** — Align Vitest version (currently ranges from `^2.0.0` to `^3.1.4`)
-- [ ] **All packages** — Align Fastify version across all services
+### 5.3 Dependency Alignment ✅
+- [x] **All packages** — TypeScript aligned to `^5.5.0`
+- [x] **All packages** — Vitest aligned to `^2.0.0`
+- [x] **All packages** — Fastify aligned to `^5.0.0`
 
-### 5.4 CI/CD Pipeline
-- [ ] **urule** — Add GitHub Actions workflow: build + test on PR
-- [ ] **urule** — Add linting and type-checking to CI
-- [ ] **urule** — Add `npm audit` security scanning to CI
-- [ ] **urule** — Add Docker image build + push to GHCR on tag
-- [ ] **All standalone repos** — Verify CI workflows work (already have `ci.yml`)
+### 5.4 CI/CD Pipeline ✅
+- [x] **urule** — GitHub Actions: lint + typecheck, test, security audit, Docker validation
+- [x] **urule** — Issue templates (bug report, feature request)
+- [x] **urule** — PR template with testing checklist
+- [ ] **urule** — Docker image build + push to GHCR on tag
+- [x] **All standalone repos** — CI workflows already configured
 
 ### 5.5 API Documentation
 - [ ] **All services** — Add `@fastify/swagger` for auto-generated OpenAPI specs
@@ -246,10 +244,10 @@ Replace fragile init scripts with proper versioned migrations.
 - [ ] **urule** — Generate unified API docs site (Swagger UI or Redoc)
 - [ ] **Libraries** — Add TypeDoc for auto-generated type documentation
 
-### 5.6 Developer Setup
-- [ ] **urule** — Create `scripts/dev-setup.sh` that installs all deps across all packages
-- [ ] **urule** — Improve `scripts/clone-all.sh` to also run `npm install` in each repo
-- [ ] **urule** — Add a `Makefile` with common commands (`make dev`, `make test`, `make build`)
+### 5.6 Developer Setup ✅
+- [x] **urule** — `scripts/dev-setup.sh` with prerequisite checks and guided setup
+- [x] **urule** — `Makefile` with `make dev`, `make test`, `make build`, `make infra-up/down`, `make e2e`, `make clean`
+- [x] **urule** — `scripts/clone-all.sh` clones all standalone repos
 
 ---
 
