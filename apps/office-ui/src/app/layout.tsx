@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "Dofis — AI Office OS",
+  title: "Urule — AI Office OS",
   description: "Deploy and manage teams of AI coworkers in a shared virtual office.",
 };
 

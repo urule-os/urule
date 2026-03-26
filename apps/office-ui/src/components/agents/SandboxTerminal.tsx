@@ -5,7 +5,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 
 /**
  * WebSocket PTY terminal that connects to a sandboxed.sh workspace shell
- * via the Dofis proxy at /api/v1/sandbox/console/{workspaceId}.
+ * via the Urule proxy at /api/v1/sandbox/console/{workspaceId}.
  *
  * Uses xterm.js for rendering. Dynamically imported to avoid SSR issues.
  */

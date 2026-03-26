@@ -357,7 +357,7 @@ export default function SecurityPage() {
             <span className="icon text-xs">history</span> Session Logged
           </span>
         </div>
-        <span>Dofis Security v0.1.0</span>
+        <span>Urule Security v0.1.0</span>
       </div>
     </div>
   );
