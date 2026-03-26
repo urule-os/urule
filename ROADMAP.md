@@ -10,20 +10,20 @@ This document tracks improvements, fixes, and features across the entire Urule e
 
 These items must be addressed before any production deployment.
 
-### 1.1 Authentication Middleware
+### 1.1 Authentication Middleware ✅
 Add JWT validation middleware to all service routes.
 
-- [ ] **registry** — Add `@fastify/jwt` plugin, validate Bearer tokens on all `/api/v1/*` routes
-- [ ] **langgraph-adapter** — Add JWT middleware to chat, runs, and WebSocket endpoints
-- [ ] **approvals** — Add JWT middleware; extract user identity for approval audit trail
-- [ ] **mcp-gateway** — Add JWT middleware to server registration and binding routes
-- [ ] **channel-router** — Add JWT middleware (except webhook ingestion endpoints which use HMAC)
-- [ ] **packagehub** — Add JWT middleware to publish/version routes (read routes can be public)
-- [ ] **state** — Add JWT middleware to presence and task ownership routes
-- [ ] **governance** — Add JWT middleware; this service validates auth for others
-- [ ] **runtime-broker** — Add JWT middleware to session allocation routes
-- [ ] **backstage plugin** — Add service-to-service auth token validation
-- [ ] **Shared**: Create `@urule/auth-middleware` package with reusable Fastify plugin
+- [x] **registry** — Add `@fastify/jwt` plugin, validate Bearer tokens on all `/api/v1/*` routes
+- [x] **langgraph-adapter** — Add JWT middleware to chat, runs, and WebSocket endpoints
+- [x] **approvals** — Add JWT middleware; extract user identity for approval audit trail
+- [x] **mcp-gateway** — Add JWT middleware to server registration and binding routes
+- [x] **channel-router** — Add JWT middleware (except webhook ingestion endpoints which use HMAC)
+- [x] **packagehub** — Add JWT middleware to publish/version routes (read routes can be public)
+- [x] **state** — Add JWT middleware to presence and task ownership routes
+- [x] **governance** — Add JWT middleware; this service validates auth for others
+- [x] **runtime-broker** — Add JWT middleware to session allocation routes
+- [x] **backstage plugin** — Add service-to-service auth token validation
+- [x] **Shared**: Create `@urule/auth-middleware` package with reusable Fastify plugin
 
 ### 1.2 Input Validation
 Add request body/query validation on all API routes.
