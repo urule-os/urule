@@ -25,18 +25,18 @@ Add JWT validation middleware to all service routes.
 - [x] **backstage plugin** — Add service-to-service auth token validation
 - [x] **Shared**: Create `@urule/auth-middleware` package with reusable Fastify plugin
 
-### 1.2 Input Validation
+### 1.2 Input Validation ✅
 Add request body/query validation on all API routes.
 
-- [ ] **registry** — Validate agent creation (`config` field accepts arbitrary objects), workspace updates, provider creation with Zod schemas
-- [ ] **approvals** — Validate approval request body (currently cast without checking)
-- [ ] **mcp-gateway** — Validate MCP server registration payload
-- [ ] **channel-router** — Validate channel binding and identity mapping payloads
-- [ ] **state** — Validate room creation (capacity, type) and widget state updates
-- [ ] **packagehub** — Validate package publish payload and search query parameters (limit, offset)
-- [ ] **langgraph-adapter** — Validate run start params and chat message body
-- [ ] **runtime-broker** — Validate session allocation request
-- [ ] **Shared**: Consider `@fastify/type-provider-zod` for schema-first validation across all services
+- [x] **registry** — Validate agent creation, workspace updates, provider creation, conversations, auth with Zod schemas
+- [x] **approvals** — Validate approval request body, approve/deny/escalate/request-changes
+- [x] **mcp-gateway** — Validate MCP server registration, tool registration, binding creation
+- [x] **channel-router** — Validate channel binding, identity mapping, send message payloads
+- [x] **state** — Validate room creation (capacity, type), presence, tasks, widget state updates
+- [x] **packagehub** — Validate package publish payload and search query parameters (limit, offset)
+- [x] **langgraph-adapter** — Validate run start params, chat message, chat actions, artifacts
+- [x] **runtime-broker** — Validate session allocation request
+- [x] **All services**: Using Zod `safeParse()` with 400 error responses including detailed issue descriptions
 
 ### 1.3 CORS Lockdown
 Replace `origin: true` (allow all) with explicit origin whitelist.
