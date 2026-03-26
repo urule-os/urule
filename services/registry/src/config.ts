@@ -15,3 +15,16 @@ export function loadConfig(): Config {
     serviceName: 'urule-registry',
   };
 }
+
+export function validateConfig(config: Config): void {
+  const missing: string[] = [];
+  if (!process.env['DATABASE_URL'] && config.databaseUrl.includes('localhost')) {
+    missing.push('DATABASE_URL (using default)');
+  }
+  if (!process.env['NATS_URL'] && config.natsUrl.includes('localhost')) {
+    missing.push('NATS_URL (using default)');
+  }
+  if (missing.length > 0) {
+    console.warn(`[${config.serviceName}] Config warnings: ${missing.join(', ')}`);
+  }
+}

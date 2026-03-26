@@ -15,6 +15,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@fastify/rate-limit": "^10.3.0",
     "@urule/auth-middleware": "file:../urule-auth-middleware",
     "fastify": "^5.0.0",
     "semver": "^7.6.0",

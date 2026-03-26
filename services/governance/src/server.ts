@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import rateLimit from "@fastify/rate-limit";
 import type { Config } from "./config.js";
 import { authMiddleware } from "@urule/auth-middleware";
 import { errorHandler } from "./middleware/error-handler.js";
@@ -13,6 +14,12 @@ export async function buildServer(config: Config) {
   });
 
   app.setErrorHandler(errorHandler);
+
+  // Rate limiting
+  await app.register(rateLimit, {
+    max: 100,
+    timeWindow: "1 minute",
+  });
 
   // Auth middleware
   await app.register(authMiddleware, { publicRoutes: ["/healthz"] });

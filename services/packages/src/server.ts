@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import rateLimit from '@fastify/rate-limit';
 import { authMiddleware } from '@urule/auth-middleware';
 import type { Config } from './config.js';
 import { DependencyResolver } from './services/dependency-resolver.js';
@@ -11,6 +12,12 @@ export async function buildServer(config: Config) {
   const app = Fastify({
     logger: true,
     genReqId: () => crypto.randomUUID(),
+  });
+
+  // Rate limiting
+  await app.register(rateLimit, {
+    max: 100,
+    timeWindow: '1 minute',
   });
 
   // Auth middleware

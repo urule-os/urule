@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 import { authMiddleware } from '@urule/auth-middleware';
 import { createDb } from './db/connection.js';
 import { registerOrgRoutes } from './routes/orgs.routes.js';
@@ -22,7 +23,14 @@ export async function buildServer(config: Config) {
   });
 
   // CORS — allow browser requests from the Office UI
-  await app.register(cors, { origin: true });
+  const allowedOrigins = (process.env['CORS_ORIGINS'] ?? 'http://localhost:3000').split(',');
+  await app.register(cors, { origin: allowedOrigins });
+
+  // Rate limiting
+  await app.register(rateLimit, {
+    max: 100,
+    timeWindow: '1 minute',
+  });
 
   // JWT auth — validates Keycloak tokens, decorates request.uruleUser
   await app.register(authMiddleware, {

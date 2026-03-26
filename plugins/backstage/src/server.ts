@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import rateLimit from '@fastify/rate-limit';
 import { authMiddleware } from '@urule/auth-middleware';
 import { CatalogSyncService, type RegistryClient } from './catalog/sync-service.js';
 import type { UruleOrg, UruleWorkspace, UruleAgent } from './catalog/entity-mapper.js';
@@ -30,6 +31,12 @@ export async function buildServer(config: Config) {
   const app = Fastify({
     logger: true,
     genReqId: () => crypto.randomUUID(),
+  });
+
+  // Rate limiting
+  await app.register(rateLimit, {
+    max: 100,
+    timeWindow: '1 minute',
   });
 
   // Auth middleware

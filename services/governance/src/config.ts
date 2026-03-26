@@ -19,3 +19,13 @@ export function loadConfig(): Config {
     serviceName: process.env.SERVICE_NAME ?? "urule-governance",
   };
 }
+
+export function validateConfig(config: Config): void {
+  const missing: string[] = [];
+  if (!config.openfgaStoreId) {
+    missing.push("OPENFGA_STORE_ID (empty)");
+  }
+  if (missing.length > 0) {
+    console.warn(`[${config.serviceName}] Config warnings: ${missing.join(", ")}`);
+  }
+}
