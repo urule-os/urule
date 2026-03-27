@@ -55,7 +55,7 @@ FIND IT          -->    TRY IT          -->    STAY & CONTRIBUTE
 - [ ] **Add org description** at github.com/urule-os: "The open-source coordination layer for AI agents"
 
 ### 1.2 Create Social Presence
-- [ ] **Twitter/X**: Create @urule_os account
+- [x] **Twitter/X**: Created [@uruleai](https://x.com/uruleai)
   - Bio: "The open-source coordination layer for AI agents. Deploy, orchestrate, govern. Apache 2.0."
   - Pin: Launch announcement tweet with GitHub link
 - [ ] **Add social links** to README footer and GitHub org profile
@@ -266,9 +266,10 @@ Each requires a PR following the list's contribution format.
 
 | Channel | URL | Priority |
 |---------|-----|----------|
-| GitHub (main) | github.com/urule-os/urule | Primary |
+| Website | [urule.ai](https://urule.ai) | Landing page |
+| GitHub (main) | [github.com/urule-os/urule](https://github.com/urule-os/urule) | Primary |
 | GitHub Discussions | (enable in repo settings) | Community hub |
-| Twitter/X | @urule_os (create) | Announcements |
+| Twitter/X | [@uruleai](https://x.com/uruleai) | Announcements |
 | npm | @urule/* packages (publish) | Developer reach |
 | Hacker News | Show HN post | Launch spike |
 | Reddit | r/LocalLLaMA, r/MachineLearning | Community reach |

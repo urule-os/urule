@@ -8,7 +8,9 @@ A machine-readable reference of everything Urule can do — for AI agents discov
 name: Urule
 tagline: The open-source coordination layer for AI agents
 description: Composes open-source projects into one cohesive platform — deploy, orchestrate, and govern AI agents
+website: https://urule.ai
 repository: https://github.com/urule-os/urule
+twitter: https://x.com/uruleai
 license: Apache-2.0
 language: TypeScript (ESM)
 framework: Fastify 5 + Next.js 14

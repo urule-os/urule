@@ -40,7 +40,7 @@
     "openfga",
     "open-source"
   ],
-  "homepage": "https://github.com/urule-os/urule",
+  "homepage": "https://urule.ai",
   "repository": {
     "type": "git",
     "url": "https://github.com/urule-os/urule.git"

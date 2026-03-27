@@ -9,6 +9,7 @@
   <a href="https://github.com/urule-os/urule/stargazers"><img src="https://img.shields.io/github/stars/urule-os/urule?style=social" alt="Stars"></a>
   <a href="https://github.com/urule-os/urule/issues"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
   <a href="https://github.com/urule-os/urule"><img src="https://img.shields.io/badge/TypeScript-ESM-3178c6.svg" alt="TypeScript"></a>
+  <a href="https://x.com/uruleai"><img src="https://img.shields.io/badge/follow-%40uruleai-1DA1F2?logo=x&style=social" alt="Follow @uruleai"></a>
 </p>
 
 <p align="center">
