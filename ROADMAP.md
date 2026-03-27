@@ -238,10 +238,11 @@ Replace fragile init scripts with proper versioned migrations.
 - [ ] **urule** — Docker image build + push to GHCR on tag
 - [x] **All standalone repos** — CI workflows already configured
 
-### 5.5 API Documentation
-- [ ] **All services** — Add `@fastify/swagger` for auto-generated OpenAPI specs
-- [ ] **All services** — Add route-level JSDoc comments with parameter descriptions
-- [ ] **urule** — Generate unified API docs site (Swagger UI or Redoc)
+### 5.5 API Documentation ✅
+- [x] **All 11 services** — `@fastify/swagger` + `@fastify/swagger-ui` with OpenAPI 3.0 specs
+- [x] **All services** — Swagger UI at `/docs` (public, no auth required)
+- [x] **All services** — Service-specific titles, descriptions, and tags
+- [ ] **All services** — Add route-level JSDoc/schema annotations for richer docs
 - [ ] **Libraries** — Add TypeDoc for auto-generated type documentation
 
 ### 5.6 Developer Setup ✅
