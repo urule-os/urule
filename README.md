@@ -223,6 +223,12 @@ See [ROADMAP.md](ROADMAP.md) for the full improvement plan — ~140 items across
 
 See [USER-JOURNEYS.md](USER-JOURNEYS.md) for the complete user journey map — every screen, every flow, manual UX test checklists, and future feature ideas organized by section.
 
+## Architecture & AI-Friendly Development
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — Design decisions, system diagrams, data flow
+- [CLAUDE.md](CLAUDE.md) — AI assistant guide with code patterns, recipes, and conventions
+- [.cursorrules](.cursorrules) — Cursor AI coding rules
+
 ## Contributing
 
 We'd love your help making AI more usable. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

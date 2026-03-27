@@ -1,0 +1,21 @@
+You are working on Urule, a thin control plane for AI coworkers.
+
+Tech stack: TypeScript ESM, Fastify 5, Drizzle ORM, PostgreSQL 16, NATS, Vitest, Next.js 14, React 18, Tailwind CSS, Zustand.
+
+Rules:
+- Always use ESM imports with .js extension for local files
+- Use ULID (not UUID) for all IDs: import { ulid } from 'ulid'
+- Use Zod for all request body validation with safeParse()
+- Return 400 with { error: 'Validation failed', details: parsed.error.issues } on validation failure
+- Return 404 with { error: { code: 'ENTITY_NOT_FOUND', message } } for missing resources
+- TypeScript strict mode — never use `any`, use `unknown` with validation
+- Use Fastify app.inject() for route tests, never start a real server
+- Use request.log (Pino) for logging, never console.log in services
+- Each service has its own PostgreSQL schema — never cross-query
+- Services communicate via HTTP APIs and NATS events — never import between services
+- Follow Conventional Commits: feat:, fix:, docs:, test:, refactor:, chore:
+- Auth middleware uses skipAuth: true in tests
+- Public routes go in the publicRoutes array (healthz, /docs, webhooks)
+- All list endpoints support limit/offset pagination (max 100)
+
+See CLAUDE.md for detailed patterns, recipes, and architecture.

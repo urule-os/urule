@@ -98,6 +98,29 @@ User journeys are documented in [USER-JOURNEYS.md](USER-JOURNEYS.md). To add a n
 
 3. **Submit a PR** — Reference the journey in your PR description
 
+## AI-Assisted Development
+
+Urule is designed to be AI-friendly. Whether you use Claude Code, Cursor, GitHub Copilot, or another AI assistant, these files help:
+
+| File | Purpose |
+|------|---------|
+| [CLAUDE.md](CLAUDE.md) | Comprehensive guide: patterns, recipes, conventions, anti-patterns |
+| [.cursorrules](.cursorrules) | Concise coding rules for Cursor AI |
+| [.github/copilot-instructions.md](.github/copilot-instructions.md) | GitHub Copilot workspace instructions |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Design decisions and system diagrams |
+
+### AI-Friendly Recipes in CLAUDE.md
+
+CLAUDE.md contains step-by-step recipes for common tasks:
+- **How to add a new API route** — Zod schema + Fastify handler + tests
+- **How to add a new service** — Full service scaffold with middleware stack
+- **How to add a new widget** — Manifest + component + registration
+- **How to add a new event type** — Topic + type + export
+- **How to add a channel adapter** — Interface implementation + registration
+- **How to add an orchestrator adapter** — Contract + compliance tests
+
+When using an AI assistant, point it to CLAUDE.md first for the best results.
+
 ## Making Changes
 
 1. Create a feature branch from `main`
