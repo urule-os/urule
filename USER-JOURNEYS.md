@@ -1,6 +1,87 @@
 # Urule User Journeys
 
-A comprehensive map of every user journey in the Urule platform — with manual UX test checklists and future improvement ideas.
+A comprehensive map of every user journey in the Urule platform — with manual UX test checklists, automated Playwright tests, and future improvement ideas.
+
+---
+
+## How to Run Tests
+
+### Automated (Playwright)
+
+```bash
+# Prerequisites: Node.js 20+, Playwright browsers
+cd apps/office-ui
+npm install
+npx playwright install chromium
+
+# Run all E2E tests (starts dev server automatically)
+npm run e2e
+
+# Run with browser visible
+npm run e2e:headed
+
+# Run with interactive UI mode (pick & debug tests)
+npm run e2e:ui
+
+# Run a specific journey
+npx playwright test auth
+npx playwright test dashboard
+npx playwright test chat
+
+# View HTML report
+npm run e2e:report
+```
+
+### Manual Testing
+
+1. Start the full stack: `make infra-up` (or `docker compose -f infra/compose/docker-compose.phase6.yaml up --build -d`)
+2. Start the UI: `cd apps/office-ui && npm run dev`
+3. Open http://localhost:3000
+4. Use "Demo Login" for quick access (no Keycloak needed)
+5. Follow the checklists below for each journey
+
+### With Docker Compose (full stack)
+
+```bash
+# Boot everything including backend services
+make infra-up
+
+# Run E2E tests against the full stack
+cd apps/office-ui && BASE_URL=http://localhost:3000 npm run e2e
+```
+
+## Contributing New Journeys
+
+Want to add a new user journey or test case?
+
+1. **Document the journey** — Add a new section to this file following the existing format (steps table + UX tests + future improvements)
+2. **Write the Playwright spec** — Create `apps/office-ui/e2e/<journey-name>.spec.ts` matching your journey
+3. **Use the auth fixture** — Import `{ test, expect } from './fixtures/auth'` for authenticated tests
+4. **Submit a PR** — Reference the journey section in your PR description
+
+### Test File Structure
+
+```
+apps/office-ui/e2e/
+  fixtures/
+    auth.ts           — Demo login fixture (reuse in all authenticated tests)
+    test-data.ts       — API helpers for creating test data
+  auth.spec.ts         — Journey 1: Authentication
+  onboarding.spec.ts   — Journey 2: Onboarding
+  dashboard.spec.ts    — Journey 3: Dashboard
+  agents.spec.ts       — Journey 4: Agent Management
+  chat.spec.ts         — Journey 5: Chat & Conversations
+  approvals.spec.ts    — Journey 6: Approvals
+  projects.spec.ts     — Journey 7: Projects & Tasks
+  workspaces.spec.ts   — Journey 8: Workspaces
+  integrations.spec.ts — Journey 9: Integrations
+  settings.spec.ts     — Journey 10: Settings
+  security.spec.ts     — Journey 11: Security
+  logs.spec.ts         — Journey 12: Logs & Notifications
+  responsive.spec.ts   — Cross-cutting: Responsive Design
+  theme.spec.ts        — Cross-cutting: Theme
+  accessibility.spec.ts — Cross-cutting: Accessibility
+```
 
 ---
 

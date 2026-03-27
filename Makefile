@@ -1,4 +1,4 @@
-.PHONY: dev test build lint typecheck clean setup clone-deps infra-up infra-down e2e dev-ui
+.PHONY: dev test build lint typecheck clean setup clone-deps infra-up infra-down e2e e2e-ui e2e-playwright e2e-headed e2e-report playwright-install dev-ui
 
 # Clone all standalone ecosystem repos
 clone-deps:
@@ -33,9 +33,29 @@ infra-up:
 infra-down:
 	cd infra/compose && docker compose -f docker-compose.phase6.yaml down
 
-# Run E2E tests
+# Run backend E2E tests (Phase 1 API tests)
 e2e:
 	cd infra && ./scripts/run-phase1.sh
+
+# Run Playwright UI E2E tests
+e2e-ui:
+	cd apps/office-ui && npx playwright test --ui
+
+# Run Playwright tests headless
+e2e-playwright:
+	cd apps/office-ui && npx playwright test
+
+# Run Playwright tests with browser visible
+e2e-headed:
+	cd apps/office-ui && npx playwright test --headed
+
+# View Playwright HTML report
+e2e-report:
+	cd apps/office-ui && npx playwright show-report
+
+# Install Playwright browsers
+playwright-install:
+	cd apps/office-ui && npx playwright install chromium
 
 # Clean all build artifacts
 clean:
